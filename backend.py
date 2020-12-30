@@ -15,3 +15,14 @@ USER_FTP = "f0478423"
 
 PATH_PHOTOS = "C:\\ProgramData\\UCSG"
 SEPARATOR = "\\"
+
+
+con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
+
+
+
+if __name__ == "__main__":
+    with con.cursor() as cur:
+        cur.execute("SELECT * FROM accounts")
+        a = cur.fetchall()
+        print(a)
