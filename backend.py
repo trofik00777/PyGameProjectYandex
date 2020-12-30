@@ -20,12 +20,28 @@ SEPARATOR = "\\"
 con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
 
 
-def registration():
-    pass
+def md5(text):
+    return hashlib.md5(text.encode()).hexdigest()
 
 
-def check_login_password():
-    pass
+def registration(login, password):
+    hash_password = md5(password)
+    con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
+    with con.cursor() as cur:
+        cur.execute(f"INSERT INTO accounts(login, password) VALUES ('{login}', '{hash_password}')")
+    con.commit()
+
+
+def check_login_password(login, password):
+    hash_password = md5(password)
+    con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
+    with con.cursor() as cur:
+        cur.execute(f"SELECT * FROM accounts WHERE login='{login}' AND password='{hash_password}'")
+        res = cur.fetchone()
+    if res:
+        return res
+    return False
+
 
 if __name__ == "__main__":
     with con.cursor() as cur:
