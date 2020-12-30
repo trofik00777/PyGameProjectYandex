@@ -20,6 +20,12 @@ SEPARATOR = "\\"
 con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
 
 
+def registration():
+    pass
+
+
+def check_login_password():
+    pass
 
 if __name__ == "__main__":
     with con.cursor() as cur:
