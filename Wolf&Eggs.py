@@ -1,7 +1,9 @@
 import pygame
 import os
 import sys
-from ctypes import *
+import tkinter as tk
+
+root = tk.Tk()
 
 
 def load_image(name, colorkey=None):
@@ -10,9 +12,9 @@ def load_image(name, colorkey=None):
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
-    kx, ky = 1920 / windll.user32.GetSystemMetrics(0), 1080 / windll.user32.GetSystemMetrics(1)  # коэфы масштабирования
+    kx, ky = 1920 / root.winfo_screenwidth(), 1080 / root.winfo_screenheight()  # коэфы масштабирования
     image = pygame.image.load(fullname)
-    image = pygame.transform.scale(image, (int(image.get_rect()[2] * kx), int(image.get_rect()[3] * ky)))
+    image = pygame.transform.scale(image, (int(image.get_rect()[2] / kx), int(image.get_rect()[3] / ky)))
     return image
 
 # Вход начало ---------------------------------------------------------------------------------------------------
@@ -120,7 +122,7 @@ def menu_call():
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Wolf & Eggs')
-    size = width, height = 1920, 1080
+    size = width, height = root.winfo_screenwidth(), root.winfo_screenheight()
     screen = pygame.display.set_mode(size)
     running = True
 
