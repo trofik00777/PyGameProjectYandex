@@ -1,7 +1,7 @@
 import pygame
 import os
 import sys
-from ctypes import *
+from screeninfo import get_monitors
 
 
 def load_image(name, colorkey=None):
@@ -10,16 +10,59 @@ def load_image(name, colorkey=None):
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
-    kx, ky = 1920 / windll.user32.GetSystemMetrics(0), 1080 / windll.user32.GetSystemMetrics(1)  # коэфы масштабирования
+    kx, ky = 1920 / get_monitors()[0].width, 1080 / get_monitors()[0].height  # коэфы масштабирования
     image = pygame.image.load(fullname)
-    image = pygame.transform.scale(image, (int(image.get_rect()[2] * kx), int(image.get_rect()[3] * ky)))
+    image = pygame.transform.scale(image, (int(image.get_rect()[2] / kx), int(image.get_rect()[3] / ky)))
     return image
+
 
 # Вход начало ---------------------------------------------------------------------------------------------------
 
 
 class Login_panel(pygame.sprite.Sprite):  # кнопки меню
     image = load_image("login_panel.png")
+
+    def __init__(self):
+        super().__init__(login_sprites)
+        self.image = Login_panel.image
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = int(width / 2 - self.rect[2] / 2)
+        self.rect.y = int(height / 2 - self.rect[2] / 2)
+
+    def update(self, *args):
+        global menu, log_in
+
+
+class Input_login(pygame.sprite.Sprite):  # кнопки меню
+    image = load_image("input_login.png")
+
+    def __init__(self):
+        super().__init__(login_sprites)
+        self.image = Login_panel.image
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = int(width / 2 - self.rect[2] / 2)
+        self.rect.y = int(height / 2 - self.rect[2] / 2)
+        self.font = pygame.font.Font(None, 20)
+        self.string = ''
+
+    def update(self, *args):
+        global menu, log_in, read_log
+        if args and args[0].type == pygame.KEYDOWN and \
+                self.rect.collidepoint(args[0].pos):
+            read_log = True
+        if read_log:
+            if args[0].type == pygame.KEYDOWN:
+                if args[0].key == pygame.K_BACKSPACE:
+                    if len(self.string) > 0:
+                        self.string = self.string[:len(self.string) - 1]
+                else:
+                    self.string += args[0].key.unicode()
+
+
+class Login(pygame.sprite.Sprite):  # кнопки меню
+    image = load_image("login.png")
 
     def __init__(self):
         super().__init__(login_sprites)
@@ -120,20 +163,23 @@ def menu_call():
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Wolf & Eggs')
-    size = width, height = 1920, 1080
+    size = width, height = get_monitors()[0].width, get_monitors()[0].height
     screen = pygame.display.set_mode(size)
     running = True
 
     # Флаги, отвечающие за вызов функций и отрисовку окна
     log_in = True
     menu = False
+    read_log = False
     # -----------------------------------------------------------------------------------------------------------
 
     # Логин -------------------------------------------------------------------------------------------------------
     login_sprites = pygame.sprite.Group()
     login_panel = Login_panel()
+    login = Login()
+    input_login = Input_login()
     # Логин ------------------------------------------------------------------------------------------------------
-    
+
     # Меню ------------------------------------------------------------------------------------------------------
     menu_sprites = pygame.sprite.Group()
     '''
