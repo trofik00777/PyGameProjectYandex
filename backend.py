@@ -80,5 +80,30 @@ def get_top10():
         return "Ошибка, повторите попытку позже"
 
 
+def get_rank_player(player_login: str):
+    try:
+        con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
+        with con.cursor() as cur:
+            cur.execute("SELECT accounts.login, rating.settings, rating.score "
+                        "FROM accounts, rating "
+                        "WHERE accounts.id=rating.id_player "
+                        "ORDER BY rating.score")
+            res = cur.fetchall()
+        ranks = []
+        for rank, player in enumerate(res):
+            if player[0] == player_login:
+                settings = player[1].split(";")
+
+                ranks.append((rank + 1, player[0],
+                               f"скорость яиц:{settings[0]}\n"
+                               f"скорость волка:{settings[1]}\n"
+                               f"скорость появления яиц:{settings[2]}",
+                               player[2]))
+        return ranks
+    except Exception as e:
+        print(e)
+        return "Ошибка, повторите попытку позже"
+
+
 if __name__ == "__main__":
     print(get_top10())
