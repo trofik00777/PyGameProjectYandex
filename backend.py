@@ -26,21 +26,31 @@ def md5(text):
 
 def registration(login, password):
     hash_password = md5(password)
-    con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
-    with con.cursor() as cur:
-        cur.execute(f"INSERT INTO accounts(login, password) VALUES ('{login}', '{hash_password}')")
-    con.commit()
+    try:
+        con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
+        with con.cursor() as cur:
+            cur.execute(f"INSERT INTO accounts(login, password) VALUES ('{login}', '{hash_password}')")
+        con.commit()
+    except pymysql.err.IntegrityError:
+        return f"Логин '{login}' уже существует"
+    except Exception as e:
+        print(e)
+        return "Ошибка, повторите попытку позже"
 
 
 def check_login_password(login, password):
     hash_password = md5(password)
-    con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
-    with con.cursor() as cur:
-        cur.execute(f"SELECT * FROM accounts WHERE login='{login}' AND password='{hash_password}'")
-        res = cur.fetchone()
-    if res:
-        return res
-    return False
+    try:
+        con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
+        with con.cursor() as cur:
+            cur.execute(f"SELECT * FROM accounts WHERE login='{login}' AND password='{hash_password}'")
+            res = cur.fetchone()
+        if res:
+            return res
+        return False
+    except Exception as e:
+        print(e)
+        return "Ошибка, повторите попытку позже"
 
 
 if __name__ == "__main__":
