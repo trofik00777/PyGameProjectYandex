@@ -9,6 +9,8 @@ root = tk.Tk()
 #  Переменные - ошибочные действия пользователей
 error_menu_limit = False
 error_wrong_data = False
+error_sign = False
+error_reg = False
 
 
 def load_image(name, colorkey=None):
@@ -22,10 +24,11 @@ def load_image(name, colorkey=None):
     image = pygame.transform.scale(image, (int(image.get_rect()[2] / kx), int(image.get_rect()[3] / ky)))
     return image
 
+
 # Вход начало ---------------------------------------------------------------------------------------------------
 
 
-class Login_panel(pygame.sprite.Sprite):  # кнопки меню
+class Login_panel(pygame.sprite.Sprite):
     image = load_image("login_panel.png")
 
     def __init__(self):
@@ -37,7 +40,7 @@ class Login_panel(pygame.sprite.Sprite):  # кнопки меню
         self.rect.y = int(height / 2 - self.rect[3] / 2)
 
 
-class Input_login(pygame.sprite.Sprite):  # кнопки меню
+class Input_login(pygame.sprite.Sprite):
     image = load_image("input_login.png")
 
     def __init__(self):
@@ -51,7 +54,7 @@ class Input_login(pygame.sprite.Sprite):  # кнопки меню
         self.string = ''
 
     def update(self, *args):
-        global menu, log_in, read_log, error_menu_limit, read_pass
+        global menu, log_in, read_log, error_menu_limit, read_pass, error_wrong_data, error_reg, error_sign
         text = self.font.render(self.string, True, (0, 0, 0))
         txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 0.78))
         screen.blit(text, txt_rect)
@@ -62,6 +65,7 @@ class Input_login(pygame.sprite.Sprite):  # кнопки меню
             screen.blit(text, txt_rect)
         if read_log and args:
             if args[0].type == pygame.KEYDOWN:
+                error_reg, error_sign, error_wrong_data = False, False, False
                 if args[0].key == pygame.K_BACKSPACE:
                     if len(self.string) > 0:
                         self.string = self.string[:len(self.string) - 1]
@@ -78,7 +82,7 @@ class Input_login(pygame.sprite.Sprite):  # кнопки меню
             read_pass = False
 
 
-class Input_password(pygame.sprite.Sprite):  # кнопки меню
+class Input_password(pygame.sprite.Sprite):
     image = load_image("input_login.png")
 
     def __init__(self):
@@ -92,12 +96,13 @@ class Input_password(pygame.sprite.Sprite):  # кнопки меню
         self.string = ''
 
     def update(self, *args):
-        global menu, log_in, read_log, read_pass, error_menu_limit
+        global menu, log_in, read_log, read_pass, error_menu_limit, error_wrong_data, error_reg, error_sign
         text = self.font.render(self.string, True, (0, 0, 0))
         txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 1.05))
         screen.blit(text, txt_rect)
         if read_pass and args:
             if args[0].type == pygame.KEYDOWN:
+                error_reg, error_sign, error_wrong_data = False, False, False
                 if args[0].key == pygame.K_BACKSPACE:
                     if len(self.string) > 0:
                         error_menu_limit = False
@@ -114,7 +119,7 @@ class Input_password(pygame.sprite.Sprite):  # кнопки меню
             read_pass = True
 
 
-class Sign_in(pygame.sprite.Sprite):  # кнопки меню
+class Sign_in(pygame.sprite.Sprite):
     image = load_image("btn_sign_in.png")
 
     def __init__(self):
@@ -126,18 +131,31 @@ class Sign_in(pygame.sprite.Sprite):  # кнопки меню
         self.rect.y = int(height / 2 - self.rect[3] / 2) * 1.34
 
     def update(self, *args):
-        global menu, log_in, input_pass, input_login, error_wrong_data
+        global menu, log_in, input_pass, input_login, error_wrong_data, error_sign, error_reg, error_menu_limit
+        if error_sign:
+            font = pygame.font.Font(None, 60)
+            text = font.render(check_login_password(input_login.string, input_pass.string), True, (100, 0, 0))
+            txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 0.2))
+            screen.blit(text, txt_rect)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
-                self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):  # Подбор ------------------------------------------
+                self.rect.collidepoint(
+                    (args[0].pos[0] + 22, args[0].pos[1] + 5)):  # Подбор ------------------------------------------
+            error_reg, error_sign, error_menu_limit, error_wrong_data = False, False, False, False
             if input_login.string and input_pass.string and check_login_password(input_login.string, input_pass.string):
-                menu = True  # Переключение на окно Меню ---------------------------------------------------------------
-                log_in = False
-                error_wrong_data = False
+                if isinstance(check_login_password(input_login.string, input_pass.string), tuple):
+                    menu = True  # Переключение на окно Меню ---------------------------------------------------------------
+                    log_in = False
+                    error_wrong_data = False
+                    error_sign = False
+                else:
+                    error_sign = True
+                    error_wrong_data = False
             else:
                 error_wrong_data = True
+                error_sign = False
 
 
-class Register(pygame.sprite.Sprite):  # кнопки меню
+class Register(pygame.sprite.Sprite):
     image = load_image("btn_register.png")
 
     def __init__(self):
@@ -149,21 +167,35 @@ class Register(pygame.sprite.Sprite):  # кнопки меню
         self.rect.y = int(height / 2 - self.rect[3] / 2) * 1.34
 
     def update(self, *args):
-        global menu, log_in, error_wrong_data, input_pass, input_login
+        global menu, log_in, error_wrong_data, input_pass, input_login, error_reg, error_sign
         if error_wrong_data:
             font = pygame.font.Font(None, 60)
             text = font.render('Неверные данные', True, (100, 0, 0))
             txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 0.2))
             screen.blit(text, txt_rect)
+        if error_reg:
+            font = pygame.font.Font(None, 60)
+            text = font.render(registration(input_login.string, input_pass.string), True, (100, 0, 0))
+            txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 0.2))
+            screen.blit(text, txt_rect)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
-                self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):  # Подбор ------------------------------------------
+                self.rect.collidepoint(
+                    (args[0].pos[0] + 22, args[0].pos[1] + 5)):  # Подбор ------------------------------------------
+            error_reg, error_sign, error_menu_limit, error_wrong_data = False, False, False, False
             if input_login.string and input_pass.string:
-                registration(input_login.string, input_pass.string)
-                error_wrong_data = False
-                menu = True  # Переключение на окно Меню ---------------------------------------------------------------
-                log_in = False
+                if not registration(input_login.string, input_pass.string):
+                    error_wrong_data = False
+                    error_reg = False
+                    error_sign = False
+                    menu = True  # Переключение на окно Меню ---------------------------------------------------------------
+                    log_in = False
+                else:
+                    error_reg = True
+                    error_wrong_data = False
+                    error_sign = False
             else:
                 error_wrong_data = True
+                error_reg = False
 
 
 def log_in_call():
@@ -180,6 +212,7 @@ def log_in_call():
     login_sprites.update()
     pygame.display.flip()
 
+
 # Вход конец ----------------------------------------------------------------------------------------------------------
 
 # Меню начало ---------------------------------------------------------------------------------------------------
@@ -189,8 +222,10 @@ class Menu_Background(pygame.sprite.Sprite):  # фон меню
     image = load_image("menu_background.jpg")
 
     def __init__(self):
+        global info_sprites
         super().__init__(menu_sprites)
         super().__init__(login_sprites)
+        super().__init__(info_sprites)
         self.image = Menu_Background.image
         self.rect = self.image.get_rect()
         self.rect.bottom = height
@@ -207,7 +242,24 @@ class Menu_Btn(pygame.sprite.Sprite):  # кнопки меню
         self.rect.x = int(width / 2 - self.rect[2] / 2)
 
 
-class Cup(pygame.sprite.Sprite):  # кнопки меню
+class Btn_Start(Menu_Btn):
+    pass
+
+
+class Btn_Settings(Menu_Btn):
+    pass
+
+
+class Btn_Info(Menu_Btn):
+    def update(self, *args):
+        global menu, info
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):
+            info = True
+            menu = False
+
+
+class Cup(pygame.sprite.Sprite):
     image = load_image("cup.png")
 
     def __init__(self):
@@ -223,17 +275,17 @@ def menu_call():
     global running, menu_sprites
     menu_background = Menu_Background()
     menu_list_of_btn_names = ['Играть', 'Настройки', 'Справка']
-    font = pygame.font.Font(None, 40)
-    for i in range(3):
-        menu_btn = Menu_Btn()
-        menu_btn.rect.y = int(height * 0.4 + i * (menu_btn.rect[3] + int(height / 54)))
+    font = pygame.font.Font(None, 50)
+    btn_start, btn_settings, btn_info = Btn_Start(), Btn_Settings(), Btn_Info()
+    for n, i in enumerate([btn_start, btn_settings, btn_info]):
+        i.rect.y = int(height * 0.4 + n * (i.rect[3] + int(height / 54)))
     cup = Cup()
     screen.fill((255, 255, 255))
     menu_sprites.draw(screen)
     for i in range(3):
         text = font.render(menu_list_of_btn_names[i], True, (255, 255, 255))
         txt_rect = text.get_rect(center=(width / 2,
-                                         int(height * 0.45 + i * (menu_btn.rect[3] + int(height / 54)))))
+                                         int(height * 0.45 + i * (btn_start.rect[3] + int(height / 54)))))
         screen.blit(text, txt_rect)  # текст на кнопках меню
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -241,11 +293,38 @@ def menu_call():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:  # Esc - выход из приложения
                 running = False
+        menu_sprites.update(event)
     menu_sprites.update()
     pygame.display.flip()
 
 
 # Меню конец ----------------------------------------------------------------------------------------------------------
+
+# Справка
+info_sprites = pygame.sprite.Group()
+with open('info.txt', mode='r', encoding='utf-8') as f:
+    text_about = f.read()
+
+
+def info_call():
+    global running , text_about
+    screen.fill((255, 255, 255))
+    info_sprites.draw(screen)
+    font = pygame.font.Font(None, 40)
+    text = font.render(text_about, True, (200, 0, 0))
+    txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 1.5))
+    screen.blit(text, txt_rect)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:  # Esc - выход из приложения
+                running = False
+        info_sprites.update(event)
+    info_sprites.update()
+    pygame.display.flip()
+
+# Справка
 
 
 if __name__ == '__main__':
@@ -258,6 +337,8 @@ if __name__ == '__main__':
     # Флаги, отвечающие за вызов функций и отрисовку окна
     log_in = True
     menu = False
+    info = False
+
     read_log = False
     read_pass = False
     # -----------------------------------------------------------------------------------------------------------
@@ -273,13 +354,6 @@ if __name__ == '__main__':
 
     # Меню ------------------------------------------------------------------------------------------------------
     menu_sprites = pygame.sprite.Group()
-    '''
-    menu_background = Menu_Background()
-    menu_list_of_btn_names = ['Играть', 'Настройки', 'Справка']
-    font = pygame.font.Font(None, 40)
-    for i in range(3):
-        menu_btn = Menu_Btn()
-        menu_btn.rect.y = int(height * 0.4 + i * (menu_btn.rect[3] + int(height / 54)))'''
     # Меню ----------------------------------------------------------------------------------------------------------
     clock = pygame.time.Clock()
     while running:
@@ -287,5 +361,7 @@ if __name__ == '__main__':
             log_in_call()
         if menu:
             menu_call()
+        if info:
+            info_call()
         clock.tick(60)
     pygame.quit()
