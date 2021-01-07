@@ -63,7 +63,7 @@ def get_top10():
             cur.execute("SELECT accounts.login, rating.settings, rating.score "
                         "FROM accounts, rating "
                         "WHERE accounts.id=rating.id_player "
-                        "ORDER BY rating.score "
+                        "ORDER BY rating.score DESC "
                         "LIMIT 10")
             res = cur.fetchall()
             rating = []
@@ -87,7 +87,7 @@ def get_rank_player(player_login: str):
             cur.execute("SELECT accounts.login, rating.settings, rating.score "
                         "FROM accounts, rating "
                         "WHERE accounts.id=rating.id_player "
-                        "ORDER BY rating.score")
+                        "ORDER BY rating.score DESC ")
             res = cur.fetchall()
         ranks = []
         for rank, player in enumerate(res):
@@ -99,7 +99,10 @@ def get_rank_player(player_login: str):
                                f"скорость волка:{settings[1]}\n"
                                f"скорость появления яиц:{settings[2]}",
                                player[2]))
-        return ranks
+        if ranks:
+            return ranks
+        else:
+            return "Информация о результатах отсутствует"
     except Exception as e:
         print(e)
         return "Ошибка, повторите попытку позже"
@@ -107,3 +110,4 @@ def get_rank_player(player_login: str):
 
 if __name__ == "__main__":
     print(get_top10())
+    print(get_rank_player("log"))
