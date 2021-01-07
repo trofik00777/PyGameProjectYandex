@@ -29,7 +29,8 @@ def registration(login, password):
     try:
         con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
         with con.cursor() as cur:
-            cur.execute(f"INSERT INTO accounts(login, password) VALUES ('{login}', '{hash_password}')")
+            cur.execute(f"INSERT INTO accounts(login, password) "
+                        f"VALUES ('{login}', '{hash_password}')")
         con.commit()
     except pymysql.err.IntegrityError:
         return f"Логин '{login}' уже существует"
@@ -43,7 +44,9 @@ def check_login_password(login, password):
     try:
         con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
         with con.cursor() as cur:
-            cur.execute(f"SELECT * FROM accounts WHERE login='{login}' AND password='{hash_password}'")
+            cur.execute(f"SELECT * "
+                        f"FROM accounts "
+                        f"WHERE login='{login}' AND password='{hash_password}'")
             res = cur.fetchone()
         if res:
             return res
@@ -53,8 +56,29 @@ def check_login_password(login, password):
         return "Ошибка, повторите попытку позже"
 
 
+def get_top10():
+    try:
+        con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
+        with con.cursor() as cur:
+            cur.execute("SELECT accounts.login, rating.settings, rating.score "
+                        "FROM accounts, rating "
+                        "WHERE accounts.id=rating.id_player "
+                        "ORDER BY rating.score "
+                        "LIMIT 10")
+            res = cur.fetchall()
+            rating = []
+            for rank, player in enumerate(res):
+                settings = player[1].split(";")
+                rating.append((rank + 1, player[0],
+                               f"скорость яиц:{settings[0]}\n"
+                               f"скорость волка:{settings[1]}\n"
+                               f"скорость появления яиц:{settings[2]}",
+                               player[2]))
+        return rating
+    except Exception as e:
+        print(e)
+        return "Ошибка, повторите попытку позже"
+
+
 if __name__ == "__main__":
-    with con.cursor() as cur:
-        cur.execute("SELECT * FROM accounts")
-        a = cur.fetchall()
-        print(a)
+    print(get_top10())
