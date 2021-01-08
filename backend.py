@@ -56,49 +56,61 @@ def check_login_password(login, password):
         return "Ошибка, повторите попытку позже"
 
 
-def get_top10():
+def get_top10(level):
     try:
         con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
         with con.cursor() as cur:
-            cur.execute("SELECT accounts.login, rating.settings, rating.score "
-                        "FROM accounts, rating "
-                        "WHERE accounts.id=rating.id_player "
-                        "ORDER BY rating.score DESC "
-                        "LIMIT 10")
+            cur.execute(f"SELECT accounts.login, rating.score "
+                        f"FROM accounts, rating "
+                        f"WHERE accounts.id=rating.id_player "
+                        f"AND rating.level='{level}' "
+                        f"ORDER BY rating.score DESC "
+                        f"LIMIT 10")
             res = cur.fetchall()
             rating = []
             for rank, player in enumerate(res):
-                settings = player[1].split(";")
-                rating.append((rank + 1, player[0],
-                               f"скорость яиц:{settings[0]}\n"
-                               f"скорость волка:{settings[1]}\n"
-                               f"скорость появления яиц:{settings[2]}",
-                               player[2]))
+                rating.append((rank + 1, player[0], player[1]))
+            # rating = []
+            # for rank, player in enumerate(res):
+            #     settings = player[1].split(";")
+            #     rating.append((rank + 1, player[0],
+            #                    f"скорость яиц:{settings[0]}\n"
+            #                    f"скорость волка:{settings[1]}\n"
+            #                    f"скорость появления яиц:{settings[2]}",
+            #                    player[2]))
         return rating
+        # return res
     except Exception as e:
         print(e)
         return "Ошибка, повторите попытку позже"
 
 
-def get_rank_player(player_login: str):
+def get_rank_player(player_login: str, level):
     try:
         con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
         with con.cursor() as cur:
-            cur.execute("SELECT accounts.login, rating.settings, rating.score "
-                        "FROM accounts, rating "
-                        "WHERE accounts.id=rating.id_player "
-                        "ORDER BY rating.score DESC ")
+            cur.execute(f"SELECT accounts.login, rating.score "
+                        f"FROM accounts, rating "
+                        f"WHERE accounts.id=rating.id_player "
+                        f"AND rating.level='{level}' "
+                        f"ORDER BY rating.score DESC")
             res = cur.fetchall()
-        ranks = []
+            print(res)
+        ranks = None
+        # for rank, player in enumerate(res):
+        #     if player[0] == player_login:
+        #         settings = player[1].split(";")
+        #
+        #         ranks.append((rank + 1, player[0],
+        #                        f"скорость яиц:{settings[0]}\n"
+        #                        f"скорость волка:{settings[1]}\n"
+        #                        f"скорость появления яиц:{settings[2]}",
+        #                        player[2]))
         for rank, player in enumerate(res):
             if player[0] == player_login:
-                settings = player[1].split(";")
+                ranks = (rank + 1, player[0], player[1])
+                break
 
-                ranks.append((rank + 1, player[0],
-                               f"скорость яиц:{settings[0]}\n"
-                               f"скорость волка:{settings[1]}\n"
-                               f"скорость появления яиц:{settings[2]}",
-                               player[2]))
         if ranks:
             return ranks
         else:
@@ -109,5 +121,5 @@ def get_rank_player(player_login: str):
 
 
 if __name__ == "__main__":
-    print(get_top10())
-    print(get_rank_player("log"))
+    print(get_top10(1))
+    print(get_rank_player("log", 1))
