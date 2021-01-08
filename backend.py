@@ -120,6 +120,36 @@ def get_rank_player(player_login: str, level):
         return "Ошибка, повторите попытку позже"
 
 
+def update_rating(login: str, level, score):
+    try:
+        con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
+        with con.cursor() as cur:
+            cur.execute(f"SELECT rating.id, rating.score "
+                        f"FROM rating, accounts "
+                        f"WHERE accounts.login='{login}' "
+                        f"AND rating.id_player=accounts.id "
+                        f"AND rating.level='{level}'")
+            res = cur.fetchone()
+            if res:
+                id, pred_score = res
+                if pred_score < score:
+                    cur.execute(f"UPDATE rating "
+                                f"SET score='{score}' "
+                                f"WHERE id='{id}'")
+            else:
+                cur.execute(f"SELECT id "
+                            f"FROM accounts "
+                            f"WHERE login='{login}'")
+                id_login = cur.fetchone()[0]
+                cur.execute(f"INSERT INTO rating (id_player, score, level) "
+                            f"VALUES ('{id_login}', '{score}', '{level}')")
+        con.commit()
+    except Exception as e:
+        print(e)
+        return "Ошибка, повторите попытку позже"
+
+
 if __name__ == "__main__":
-    print(get_top10(1))
+    print(get_top10(2))
     print(get_rank_player("log", 1))
+    update_rating("Gleb", 2, 21)
