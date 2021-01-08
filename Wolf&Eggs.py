@@ -76,6 +76,10 @@ class Input_login(pygame.sprite.Sprite):
                         error_menu_limit = False
                     else:
                         error_menu_limit = True
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_IBEAM)
+        else:
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint(args[0].pos):
             read_log = True
@@ -113,6 +117,8 @@ class Input_password(pygame.sprite.Sprite):
                         self.string += args[0].unicode
                     else:
                         error_menu_limit = True
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_IBEAM)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint(args[0].pos):
             read_log = False
@@ -137,6 +143,8 @@ class Sign_in(pygame.sprite.Sprite):
             text = font.render(check_login_password(input_login.string, input_pass.string), True, (100, 0, 0))
             txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 0.2))
             screen.blit(text, txt_rect)
+        if self.rect.collidepoint((pygame.mouse.get_pos()[0] + 22, pygame.mouse.get_pos()[1] + 5)):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint(
                     (args[0].pos[0] + 22, args[0].pos[1] + 5)):  # Подбор ------------------------------------------
@@ -178,6 +186,8 @@ class Register(pygame.sprite.Sprite):
             text = font.render(registration(input_login.string, input_pass.string), True, (100, 0, 0))
             txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 0.2))
             screen.blit(text, txt_rect)
+        if self.rect.collidepoint((pygame.mouse.get_pos()[0] + 22, pygame.mouse.get_pos()[1] + 5)):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint(
                     (args[0].pos[0] + 22, args[0].pos[1] + 5)):  # Подбор ------------------------------------------
@@ -211,6 +221,8 @@ def log_in_call():
         login_sprites.update(event)
     login_sprites.update()
     pygame.display.flip()
+    if menu:
+        pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
 
 # Вход конец ----------------------------------------------------------------------------------------------------------
@@ -243,20 +255,50 @@ class Menu_Btn(pygame.sprite.Sprite):  # кнопки меню
 
 
 class Btn_Start(Menu_Btn):
-    pass
+    def update(self, *args):
+        global menu
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+        else:
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
 
 class Btn_Settings(Menu_Btn):
-    pass
+    def update(self, *args):
+        global menu
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
 
 
 class Btn_Info(Menu_Btn):
     def update(self, *args):
         global menu, info
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):
             info = True
             menu = False
+
+
+class Exit_Btn(pygame.sprite.Sprite):  # кнопки меню
+    image = load_image("btn_exit.png")
+
+    def __init__(self):
+        super().__init__(menu_sprites)
+        self.image = Exit_Btn.image
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = int(width * 0.1)
+        self.rect.y = int(height * 0.1)
+
+    def update(self, *args):
+        global running
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):
+            running = False
 
 
 class Cup(pygame.sprite.Sprite):
@@ -270,9 +312,14 @@ class Cup(pygame.sprite.Sprite):
         self.rect.x = int(width * 0.7 - self.rect[2] / 2)
         self.rect.y = int(height * 0.75 - self.rect[3] / 2)
 
+    def update(self, *args):
+        global menu
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+
 
 def menu_call():
-    global running, menu_sprites
+    global running, menu_sprites, info
     menu_background = Menu_Background()
     menu_list_of_btn_names = ['Играть', 'Настройки', 'Справка']
     font = pygame.font.Font(None, 50)
@@ -280,6 +327,7 @@ def menu_call():
     for n, i in enumerate([btn_start, btn_settings, btn_info]):
         i.rect.y = int(height * 0.4 + n * (i.rect[3] + int(height / 54)))
     cup = Cup()
+    exit_btn = Exit_Btn()
     screen.fill((255, 255, 255))
     menu_sprites.draw(screen)
     for i in range(3):
@@ -290,24 +338,47 @@ def menu_call():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:  # Esc - выход из приложения
-                running = False
         menu_sprites.update(event)
     menu_sprites.update()
     pygame.display.flip()
+    if info:
+        pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
 
 # Меню конец ----------------------------------------------------------------------------------------------------------
 
 # Справка
+class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
+    image = load_image("btn_back.png")
+
+    def __init__(self):
+        super().__init__(info_sprites)
+        self.image = Back_Btn.image
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = int(width * 0.1)
+        self.rect.y = int(height * 0.1)
+
+    def update(self, *args):
+        global menu, info
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+        else:
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):
+            info = False
+            menu = True
+
+
 info_sprites = pygame.sprite.Group()
 with open('info.txt', mode='r', encoding='utf-8') as f:
     text_about = f.read()
 
 
 def info_call():
-    global running , text_about
+    global running, text_about
+    btn_back = Back_Btn()
     screen.fill((255, 255, 255))
     info_sprites.draw(screen)
     font = pygame.font.Font(None, 40)
@@ -323,6 +394,8 @@ def info_call():
         info_sprites.update(event)
     info_sprites.update()
     pygame.display.flip()
+    if menu:
+        pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
 # Справка
 
@@ -355,6 +428,10 @@ if __name__ == '__main__':
     # Меню ------------------------------------------------------------------------------------------------------
     menu_sprites = pygame.sprite.Group()
     # Меню ----------------------------------------------------------------------------------------------------------
+
+    # Справка -----------------------------------------------------------------------------------------------------
+
+    # Справка -----------------------------------------------------------------------------------------------------
     clock = pygame.time.Clock()
     while running:
         if log_in:
