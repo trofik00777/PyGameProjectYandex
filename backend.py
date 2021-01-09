@@ -57,6 +57,40 @@ def upload_images_menu_to_pc():
     #     upload()
 
 
+def upload_skins():
+    def upload(ftp, name, dir):
+        with open(f"{PATH_PHOTOS}/skins/{dir}/{name}", "wb") as f:
+            ftp.retrbinary('RETR ' + name, f.write)
+
+    ftp = ftplib.FTP(host=HOST_FTP, user=USER_FTP, passwd="trofikpsswrd")
+    ftp.cwd("wolf_and_eggs/skins")
+    list_dir = ftp.nlst()[2:]
+    print(list_dir)
+
+    if os.path.exists(f"{PATH_PHOTOS}/skins"):
+        pass
+    else:
+        os.mkdir(f"{PATH_PHOTOS}/skins")
+
+    for directory in list_dir:
+        if os.path.exists(f"{PATH_PHOTOS}/skins/{directory}"):
+            pass
+        else:
+            os.mkdir(f"{PATH_PHOTOS}/skins/{directory}")
+
+        ftp.cwd(f"{directory}")
+        list_skins = ftp.nlst()[2:]
+        print(list_skins)
+
+        for file in list_skins:
+            if os.path.exists(f"{PATH_PHOTOS}/skins/{directory}/{file}"):
+                print(f"{file} is exist")
+            else:
+                upload(ftp, file, directory)
+
+        ftp.cwd("..")
+
+
 def download_images_icons_to_ftp(path_os):
     ftp = ftplib.FTP(host=HOST_FTP, user=USER_FTP, passwd="trofikpsswrd")
     ftp.cwd("images")
@@ -215,4 +249,4 @@ if __name__ == "__main__":
     # print(get_top10(2))
     # print(get_rank_player("log", 1))
     # update_rating("Gleb", 2, 21)
-    upload_images_menu_to_pc()
+    upload_skins()
