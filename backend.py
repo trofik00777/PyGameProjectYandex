@@ -13,11 +13,60 @@ DATABASE = "f0478423_pygame_wolf_and_eggs"
 HOST_FTP = "141.8.193.236"
 USER_FTP = "f0478423"
 
-PATH_PHOTOS = "C:\\ProgramData\\UCSG"
+PATH_PHOTOS = "data"
 SEPARATOR = "\\"
 
 
 con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
+if os.name != "nt":
+    PATH_PHOTOS = "data"
+    SEPARATOR = "/"
+
+
+def upload_images_menu_to_pc():
+    def upload(ftp, name):
+        with open(f"{PATH_PHOTOS}/{name}", "wb") as f:
+            ftp.retrbinary('RETR ' + name, f.write)
+
+    ftp = ftplib.FTP(host=HOST_FTP, user=USER_FTP, passwd="trofikpsswrd")
+    ftp.cwd("wolf_and_eggs")
+    list_dir = ftp.nlst()[2:]
+    pos_skins = list_dir.index("skins")
+    del list_dir[pos_skins]
+    print(list_dir)
+
+    if os.path.exists(PATH_PHOTOS):
+        pass
+    else:
+        os.mkdir(PATH_PHOTOS)
+
+    for file in list_dir:
+        if os.path.exists(f"{PATH_PHOTOS}/{file}"):
+            print(f"{file} is exist")
+        else:
+            upload(ftp, file)
+
+    # if os.path.exists(PATH_PHOTOS):
+    #     if os.path.exists(f"{PATH_PHOTOS}{SEPARATOR}{path_in_filemanager}"):
+    #         print("exist")
+    #     else:
+    #         upload()
+    # else:
+    #     os.mkdir(PATH_PHOTOS)
+    #
+    #     upload()
+
+
+def download_images_icons_to_ftp(path_os):
+    ftp = ftplib.FTP(host=HOST_FTP, user=USER_FTP, passwd="trofikpsswrd")
+    ftp.cwd("images")
+    with open(f"{path_os}", "rb") as f:
+        ftp.storbinary('STOR ' + path_os.split(f"{SEPARATOR}")[-1], f)
+
+
+def del_files_from_pc():
+    if os.path.exists(PATH_PHOTOS):
+        shutil.rmtree(PATH_PHOTOS)
 
 
 def md5(text):
@@ -149,7 +198,21 @@ def update_rating(login: str, level, score):
         return "Ошибка, повторите попытку позже"
 
 
+def upload():
+    ftp = ftplib.FTP(host=HOST_FTP, user=USER_FTP, passwd="trofikpsswrd")
+    ftp.cwd("wolf_and_eggs/skins")
+    list_dir = ftp.nlst()
+    dot1 = list_dir.index(".")
+    if dot1 >= 0:
+        del list_dir[dot1]
+    dot2 = list_dir.index("..")
+    if dot2 >= 0:
+        del list_dir[dot2]
+    print(list_dir)
+
+
 if __name__ == "__main__":
-    print(get_top10(2))
-    print(get_rank_player("log", 1))
-    update_rating("Gleb", 2, 21)
+    # print(get_top10(2))
+    # print(get_rank_player("log", 1))
+    # update_rating("Gleb", 2, 21)
+    upload_images_menu_to_pc()
