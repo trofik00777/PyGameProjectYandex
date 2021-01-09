@@ -234,9 +234,9 @@ class Menu_Background(pygame.sprite.Sprite):  # фон меню
     image = load_image("menu_background.jpg")
 
     def __init__(self):
-        global info_sprites
+        global info_sprites, game_sprites
         super().__init__(menu_sprites)
-        super().__init__(login_sprites)
+        super().__init__(game_sprites)
         super().__init__(info_sprites)
         self.image = Menu_Background.image
         self.rect = self.image.get_rect()
@@ -256,11 +256,15 @@ class Menu_Btn(pygame.sprite.Sprite):  # кнопки меню
 
 class Btn_Start(Menu_Btn):
     def update(self, *args):
-        global menu
+        global menu, game
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
         else:
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):
+            game = True
+            menu = False
 
 
 class Btn_Settings(Menu_Btn):
@@ -319,7 +323,7 @@ class Cup(pygame.sprite.Sprite):
 
 
 def menu_call():
-    global running, menu_sprites, info
+    global running, menu_sprites, info, game
     menu_background = Menu_Background()
     menu_list_of_btn_names = ['Играть', 'Настройки', 'Справка']
     font = pygame.font.Font(None, 50)
@@ -343,6 +347,8 @@ def menu_call():
     pygame.display.flip()
     if info:
         pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
+    if game:
+        pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
 
 # Меню конец ----------------------------------------------------------------------------------------------------------
@@ -352,7 +358,9 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
     image = load_image("btn_back.png")
 
     def __init__(self):
+        global game_sprites
         super().__init__(info_sprites)
+        super().__init__(game_sprites)
         self.image = Back_Btn.image
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
@@ -360,7 +368,7 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
         self.rect.y = int(height * 0.1)
 
     def update(self, *args):
-        global menu, info
+        global menu, info, game
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
         else:
@@ -368,6 +376,7 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):
             info = False
+            game = False
             menu = True
 
 
@@ -388,11 +397,30 @@ def info_call():
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_ESCAPE:  # Esc - выход из приложения
-                running = False
         info_sprites.update(event)
     info_sprites.update()
+    pygame.display.flip()
+    if menu:
+        pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
+# Справка
+
+# Игра
+
+
+game_sprites = pygame.sprite.Group()
+
+
+def game_call():
+    global running
+    btn_back = Back_Btn()
+    screen.fill((255, 255, 255))
+    game_sprites.draw(screen)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        game_sprites.update(event)
+    game_sprites.update()
     pygame.display.flip()
     if menu:
         pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
@@ -411,6 +439,7 @@ if __name__ == '__main__':
     log_in = True
     menu = False
     info = False
+    game = False
 
     read_log = False
     read_pass = False
@@ -429,6 +458,10 @@ if __name__ == '__main__':
     menu_sprites = pygame.sprite.Group()
     # Меню ----------------------------------------------------------------------------------------------------------
 
+    # Игра -----------------------------------------------------------------------------------------------------
+
+    # Игра -----------------------------------------------------------------------------------------------------
+
     # Справка -----------------------------------------------------------------------------------------------------
 
     # Справка -----------------------------------------------------------------------------------------------------
@@ -440,5 +473,7 @@ if __name__ == '__main__':
             menu_call()
         if info:
             info_call()
+        if game:
+            game_call()
         clock.tick(60)
     pygame.quit()
