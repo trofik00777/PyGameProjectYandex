@@ -14,13 +14,9 @@ HOST_FTP = "141.8.193.236"
 USER_FTP = "f0478423"
 
 PATH_PHOTOS = "data"
-SEPARATOR = "\\"
 
 
 con = pymysql.connect(host=HOST, user=USER, password=PASSWORD, database=DATABASE)
-if os.name != "nt":
-    PATH_PHOTOS = "data"
-    SEPARATOR = "/"
 
 
 def upload_images_menu_to_pc():
@@ -45,7 +41,6 @@ def upload_images_menu_to_pc():
             print(f"{file} is exist")
         else:
             upload(ftp, file)
-
     # if os.path.exists(PATH_PHOTOS):
     #     if os.path.exists(f"{PATH_PHOTOS}{SEPARATOR}{path_in_filemanager}"):
     #         print("exist")
@@ -89,6 +84,12 @@ def upload_skins():
                 upload(ftp, file, directory)
 
         ftp.cwd("..")
+
+
+def upload_all_images():
+    '''Выгружает все изображения на пк пользователя'''
+    upload_images_menu_to_pc()
+    upload_skins()
 
 
 def download_images_icons_to_ftp(path_os):
@@ -249,4 +250,4 @@ if __name__ == "__main__":
     # print(get_top10(2))
     # print(get_rank_player("log", 1))
     # update_rating("Gleb", 2, 21)
-    upload_skins()
+    upload_all_images()
