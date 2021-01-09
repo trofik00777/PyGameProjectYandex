@@ -92,13 +92,6 @@ def upload_all_images():
     upload_skins()
 
 
-def download_images_icons_to_ftp(path_os):
-    ftp = ftplib.FTP(host=HOST_FTP, user=USER_FTP, passwd="trofikpsswrd")
-    ftp.cwd("images")
-    with open(f"{path_os}", "rb") as f:
-        ftp.storbinary('STOR ' + path_os.split(f"{SEPARATOR}")[-1], f)
-
-
 def del_files_from_pc():
     if os.path.exists(PATH_PHOTOS):
         shutil.rmtree(PATH_PHOTOS)
