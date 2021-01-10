@@ -435,11 +435,17 @@ class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
         self.rect.y = int(height * 0.29)
 
 
+WOLF = load_image('skins/1/1.png')
+WOLF1 = load_image('skins/1/2.png')
+WOLF2 = load_image('skins/1/3.png')
+WOLF3 = load_image('skins/1/4.png')
+
+
 class Wolf(pygame.sprite.Sprite):
-    image = load_image('skins/1/1.png')
-    image2 = load_image('skins/1/2.png')
-    image3 = load_image('skins/1/3.png')
-    image4 = load_image('skins/1/4.png')
+    image = WOLF
+    image2 = WOLF1
+    image3 = WOLF2
+    image4 = WOLF3
 
     def __init__(self, n=0, kx=0.3, ky=0.5):
         global game_sprites
@@ -452,45 +458,58 @@ class Wolf(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.x = int(width * kx)
         self.y = int(height * ky)
-        self.t = not n
-        if not self.t:
-            self.rect.x = width * 2
-            self.rect.y = height * 2
-        else:
-            self.rect.x = self.x
-            self.rect.y = self.y
+        self.rect.x = self.x
+        self.rect.y = self.y
 
-    def update(self, *args):
-        global menu, info, game
-        print(self.t)
-        if not self.t:
-            self.rect.x = width * 2
-            self.rect.y = height * 2
-        else:
-            self.rect.x = self.x
-            self.rect.y = self.y
+
+class Rabbit(pygame.sprite.Sprite):
+    image = load_image('skins/1/rabbit.png')
+
+    def __init__(self):
+        global game_sprites
+        super().__init__(info_sprites)
+        super().__init__(game_sprites)
+        self.image = Rabbit.image
+        self.image = pygame.transform.scale(self.image, (int(width * 0.1), int(height * 0.1)))
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.x = int(width * 0.295)
+        self.y = int(height * 0.3)
+        self.rect.x = self.x
+        self.rect.y = self.y
 
 
 def game_call():
-    global running
+    global running, wolfs
     btn_back = Back_Btn()
     set_game_backgroud_field = GameBackgroundField()
-
-    set_wolf = Wolf()
-    # set_wolf1 = Wolf(1, 0.3, 0.5)
-    # set_wolf2 = Wolf(2, 0.5, 0.5)
-    # set_wolf3 = Wolf(3, 0.5, 0.5)
+    rabbit = Rabbit()
+    if wolfs[0]:
+        set_wolf = Wolf()
+    elif wolfs[1]:
+        set_wolf1 = Wolf(1, 0.3, 0.5)
+    elif wolfs[2]:
+        set_wolf2 = Wolf(2, 0.5, 0.5)
+    else:
+        set_wolf3 = Wolf(3, 0.5, 0.5)
     screen.fill((255, 255, 255))
     game_sprites.draw(screen)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_w:
-                set_wolf.change_d()
-                set_wolf1.change_d()
-                set_wolf2.change_d()
-                set_wolf3.change_d()
+            if event.key == pygame.K_a:
+                wolfs = [0 for i in range(4)]
+                wolfs[0] = 1
+            if event.key == pygame.K_q:
+                wolfs = [0 for i in range(4)]
+                wolfs[1] = 1
+            if event.key == pygame.K_d:
+                wolfs = [0 for i in range(4)]
+                wolfs[2] = 1
+            if event.key == pygame.K_e:
+                wolfs = [0 for i in range(4)]
+                wolfs[3] = 1
         game_sprites.update(event)
     game_sprites.update()
     pygame.display.flip()
@@ -513,6 +532,7 @@ if __name__ == '__main__':
     menu = True
     info = False
     game = False
+    wolfs = [1, 0, 0, 0]
 
     read_log = False
     read_pass = False
