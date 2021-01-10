@@ -2,7 +2,7 @@ import pygame
 import os
 import sys
 import tkinter as tk
-from backend import registration, check_login_password
+from backend import *
 
 root = tk.Tk()
 
@@ -21,7 +21,8 @@ def load_image(name, colorkey=None):
         sys.exit()
     kx, ky = 1920 / root.winfo_screenwidth(), 1080 / root.winfo_screenheight()  # коэфы масштабирования
     image = pygame.image.load(fullname)
-    image = pygame.transform.scale(image, (int(image.get_rect()[2] / kx), int(image.get_rect()[3] / ky)))
+    image = pygame.transform.scale(image,
+                                   (int(image.get_rect()[2] / kx), int(image.get_rect()[3] / ky)))
     return image
 
 
@@ -140,16 +141,19 @@ class Sign_in(pygame.sprite.Sprite):
         global menu, log_in, input_pass, input_login, error_wrong_data, error_sign, error_reg, error_menu_limit
         if error_sign:
             font = pygame.font.Font(None, 60)
-            text = font.render(check_login_password(input_login.string, input_pass.string), True, (100, 0, 0))
+            text = font.render(check_login_password(input_login.string, input_pass.string), True,
+                               (100, 0, 0))
             txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 0.2))
             screen.blit(text, txt_rect)
         if self.rect.collidepoint((pygame.mouse.get_pos()[0] + 22, pygame.mouse.get_pos()[1] + 5)):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint(
-                    (args[0].pos[0] + 22, args[0].pos[1] + 5)):  # Подбор ------------------------------------------
+                    (args[0].pos[0] + 22,
+                     args[0].pos[1] + 5)):  # Подбор ------------------------------------------
             error_reg, error_sign, error_menu_limit, error_wrong_data = False, False, False, False
-            if input_login.string and input_pass.string and check_login_password(input_login.string, input_pass.string):
+            if input_login.string and input_pass.string and check_login_password(input_login.string,
+                                                                                 input_pass.string):
                 if isinstance(check_login_password(input_login.string, input_pass.string), tuple):
                     menu = True  # Переключение на окно Меню ---------------------------------------------------------------
                     log_in = False
@@ -183,14 +187,16 @@ class Register(pygame.sprite.Sprite):
             screen.blit(text, txt_rect)
         if error_reg:
             font = pygame.font.Font(None, 60)
-            text = font.render(registration(input_login.string, input_pass.string), True, (100, 0, 0))
+            text = font.render(registration(input_login.string, input_pass.string), True,
+                               (100, 0, 0))
             txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 0.2))
             screen.blit(text, txt_rect)
         if self.rect.collidepoint((pygame.mouse.get_pos()[0] + 22, pygame.mouse.get_pos()[1] + 5)):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint(
-                    (args[0].pos[0] + 22, args[0].pos[1] + 5)):  # Подбор ------------------------------------------
+                    (args[0].pos[0] + 22,
+                     args[0].pos[1] + 5)):  # Подбор ------------------------------------------
             error_reg, error_sign, error_menu_limit, error_wrong_data = False, False, False, False
             if input_login.string and input_pass.string:
                 if not registration(input_login.string, input_pass.string):
@@ -337,7 +343,8 @@ def menu_call():
     for i in range(3):
         text = font.render(menu_list_of_btn_names[i], True, (255, 255, 255))
         txt_rect = text.get_rect(center=(width / 2,
-                                         int(height * 0.45 + i * (btn_start.rect[3] + int(height / 54)))))
+                                         int(height * 0.45 + i * (
+                                                 btn_start.rect[3] + int(height / 54)))))
         screen.blit(text, txt_rect)  # текст на кнопках меню
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -403,6 +410,7 @@ def info_call():
     if menu:
         pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
+
 # Справка
 
 # Игра
@@ -411,19 +419,103 @@ def info_call():
 game_sprites = pygame.sprite.Group()
 
 
+class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
+    image = load_image('skins/1/bgf.jpg')
+
+    def __init__(self):
+        global game_sprites
+        super().__init__(info_sprites)
+        super().__init__(game_sprites)
+
+        self.image = GameBackgroundField.image
+        self.image = pygame.transform.scale(self.image, (int(width * 0.51), int(height * 0.52)))
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = int(width * 0.235)
+        self.rect.y = int(height * 0.29)
+
+
+WOLF = load_image('skins/1/1.png')
+WOLF1 = load_image('skins/1/2.png')
+WOLF2 = load_image('skins/1/3.png')
+WOLF3 = load_image('skins/1/4.png')
+
+
+class Wolf(pygame.sprite.Sprite):
+    image = WOLF
+    image2 = WOLF1
+    image3 = WOLF2
+    image4 = WOLF3
+
+    def __init__(self, n=0, kx=0.3, ky=0.5):
+        global game_sprites
+        super().__init__(info_sprites)
+        super().__init__(game_sprites)
+        d = {0: Wolf.image, 1: Wolf.image2, 2: Wolf.image3, 3: Wolf.image4}
+        self.image = d[n]
+        self.image = pygame.transform.scale(self.image, (int(width * 0.2), int(height * 0.2)))
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.x = int(width * kx)
+        self.y = int(height * ky)
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+
+class Rabbit(pygame.sprite.Sprite):
+    image = load_image('skins/1/rabbit.png')
+
+    def __init__(self):
+        global game_sprites
+        super().__init__(info_sprites)
+        super().__init__(game_sprites)
+        self.image = Rabbit.image
+        self.image = pygame.transform.scale(self.image, (int(width * 0.1), int(height * 0.1)))
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.x = int(width * 0.295)
+        self.y = int(height * 0.3)
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+
 def game_call():
-    global running
+    global running, wolfs
     btn_back = Back_Btn()
+    set_game_backgroud_field = GameBackgroundField()
+    rabbit = Rabbit()
+    if wolfs[0]:
+        set_wolf = Wolf()
+    elif wolfs[1]:
+        set_wolf1 = Wolf(1, 0.3, 0.5)
+    elif wolfs[2]:
+        set_wolf2 = Wolf(2, 0.5, 0.5)
+    else:
+        set_wolf3 = Wolf(3, 0.5, 0.5)
     screen.fill((255, 255, 255))
     game_sprites.draw(screen)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a:
+                wolfs = [0 for i in range(4)]
+                wolfs[0] = 1
+            if event.key == pygame.K_q:
+                wolfs = [0 for i in range(4)]
+                wolfs[1] = 1
+            if event.key == pygame.K_d:
+                wolfs = [0 for i in range(4)]
+                wolfs[2] = 1
+            if event.key == pygame.K_e:
+                wolfs = [0 for i in range(4)]
+                wolfs[3] = 1
         game_sprites.update(event)
     game_sprites.update()
     pygame.display.flip()
     if menu:
         pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
 
 # Справка
 
@@ -431,15 +523,16 @@ def game_call():
 if __name__ == '__main__':
     pygame.init()
     pygame.display.set_caption('Wolf & Eggs')
-    size = width, height = root.winfo_screenwidth(), root.winfo_screenheight()
-    screen = pygame.display.set_mode(size)
+    SIZE = width, height = root.winfo_screenwidth(), root.winfo_screenheight()
+    screen = pygame.display.set_mode(SIZE)
     running = True
 
     # Флаги, отвечающие за вызов функций и отрисовку окна
-    log_in = True
-    menu = False
+    log_in = False
+    menu = True
     info = False
     game = False
+    wolfs = [1, 0, 0, 0]
 
     read_log = False
     read_pass = False
