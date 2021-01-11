@@ -1,5 +1,4 @@
 import pygame
-import os
 import sys
 import tkinter as tk
 from backend import *
@@ -36,7 +35,6 @@ class Login_panel(pygame.sprite.Sprite):
         super().__init__(login_sprites)
         self.image = Login_panel.image
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = int(width / 2 - self.rect[2] / 2)
         self.rect.y = int(height / 2 - self.rect[3] / 2)
 
@@ -48,14 +46,13 @@ class Input_login(pygame.sprite.Sprite):
         super().__init__(login_sprites)
         self.image = Input_login.image
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = int(width / 2 - self.rect[2] / 2) * 1.03
         self.rect.y = int(height / 2 - self.rect[3] / 2) * 0.78
         self.font = pygame.font.Font(None, 50)
         self.string = ''
 
     def update(self, *args):
-        global menu, log_in, read_log, error_menu_limit, read_pass, error_wrong_data, error_reg, error_sign
+        global read_log, error_menu_limit, read_pass, error_wrong_data, error_reg, error_sign
         text = self.font.render(self.string, True, (0, 0, 0))
         txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 0.78))
         screen.blit(text, txt_rect)
@@ -94,14 +91,13 @@ class Input_password(pygame.sprite.Sprite):
         super().__init__(login_sprites)
         self.image = Input_password.image
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = int(width / 2 - self.rect[2] / 2) * 1.03
         self.rect.y = int(height / 2 - self.rect[3] / 2) * 1.05
         self.font = pygame.font.Font(None, 50)
         self.string = ''
 
     def update(self, *args):
-        global menu, log_in, read_log, read_pass, error_menu_limit, error_wrong_data, error_reg, error_sign
+        global read_log, read_pass, error_menu_limit, error_wrong_data, error_reg, error_sign
         text = self.font.render(self.string, True, (0, 0, 0))
         txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 1.05))
         screen.blit(text, txt_rect)
@@ -133,7 +129,6 @@ class Sign_in(pygame.sprite.Sprite):
         super().__init__(login_sprites)
         self.image = Sign_in.image
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = int(width / 2 - self.rect[2] / 2) * 0.82
         self.rect.y = int(height / 2 - self.rect[3] / 2) * 1.34
 
@@ -155,7 +150,7 @@ class Sign_in(pygame.sprite.Sprite):
             if input_login.string and input_pass.string and check_login_password(input_login.string,
                                                                                  input_pass.string):
                 if isinstance(check_login_password(input_login.string, input_pass.string), tuple):
-                    menu = True  # Переключение на окно Меню ---------------------------------------------------------------
+                    menu = True  # Переключение на окно Меню ----------------------------------------------------------
                     log_in = False
                     error_wrong_data = False
                     error_sign = False
@@ -174,12 +169,11 @@ class Register(pygame.sprite.Sprite):
         super().__init__(login_sprites)
         self.image = Register.image
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = int(width / 2 - self.rect[2] / 2) * 1.23
         self.rect.y = int(height / 2 - self.rect[3] / 2) * 1.34
 
     def update(self, *args):
-        global menu, log_in, error_wrong_data, input_pass, input_login, error_reg, error_sign
+        global menu, log_in, error_wrong_data, input_pass, input_login, error_reg, error_sign, error_menu_limit
         if error_wrong_data:
             font = pygame.font.Font(None, 60)
             text = font.render('Неверные данные', True, (100, 0, 0))
@@ -203,7 +197,7 @@ class Register(pygame.sprite.Sprite):
                     error_wrong_data = False
                     error_reg = False
                     error_sign = False
-                    menu = True  # Переключение на окно Меню ---------------------------------------------------------------
+                    menu = True  # Переключение на окно Меню ----------------------------------------------------------
                     log_in = False
                 else:
                     error_reg = True
@@ -215,7 +209,7 @@ class Register(pygame.sprite.Sprite):
 
 
 def log_in_call():
-    global running, menu, log_in
+    global running, menu
     screen.fill((255, 255, 255))
     login_sprites.draw(screen)
     for event in pygame.event.get():
@@ -256,7 +250,6 @@ class Menu_Btn(pygame.sprite.Sprite):  # кнопки меню
         super().__init__(menu_sprites)
         self.image = Menu_Btn.image
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = int(width / 2 - self.rect[2] / 2)
 
 
@@ -298,7 +291,6 @@ class Exit_Btn(pygame.sprite.Sprite):  # кнопки меню
         super().__init__(menu_sprites)
         self.image = Exit_Btn.image
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = int(width * 0.1)
         self.rect.y = int(height * 0.1)
 
@@ -318,26 +310,17 @@ class Cup(pygame.sprite.Sprite):
         super().__init__(menu_sprites)
         self.image = Cup.image
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = int(width * 0.7 - self.rect[2] / 2)
         self.rect.y = int(height * 0.75 - self.rect[3] / 2)
 
     def update(self, *args):
-        global menu
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
 
 
-def menu_call():
+def menu_call(font):
     global running, menu_sprites, info, game
-    menu_background = Menu_Background()
     menu_list_of_btn_names = ['Играть', 'Настройки', 'Справка']
-    font = pygame.font.Font(None, 50)
-    btn_start, btn_settings, btn_info = Btn_Start(), Btn_Settings(), Btn_Info()
-    for n, i in enumerate([btn_start, btn_settings, btn_info]):
-        i.rect.y = int(height * 0.4 + n * (i.rect[3] + int(height / 54)))
-    cup = Cup()
-    exit_btn = Exit_Btn()
     screen.fill((255, 255, 255))
     menu_sprites.draw(screen)
     for i in range(3):
@@ -370,7 +353,6 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
         super().__init__(game_sprites)
         self.image = Back_Btn.image
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = int(width * 0.1)
         self.rect.y = int(height * 0.1)
 
@@ -387,17 +369,14 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
             menu = True
 
 
-info_sprites = pygame.sprite.Group()
 with open('info.txt', mode='r', encoding='utf-8') as f:
     text_about = f.read()
 
 
-def info_call():
+def info_call(font):
     global running, text_about
-    btn_back = Back_Btn()
     screen.fill((255, 255, 255))
     info_sprites.draw(screen)
-    font = pygame.font.Font(None, 40)
     text = font.render(text_about, True, (200, 0, 0))
     txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 1.5))
     screen.blit(text, txt_rect)
@@ -416,21 +395,16 @@ def info_call():
 # Игра
 
 
-game_sprites = pygame.sprite.Group()
-
-
 class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
     image = load_image('skins/1/bgf.jpg')
 
     def __init__(self):
         global game_sprites
-        super().__init__(info_sprites)
         super().__init__(game_sprites)
 
         self.image = GameBackgroundField.image
         self.image = pygame.transform.scale(self.image, (int(width * 0.51), int(height * 0.52)))
         self.rect = self.image.get_rect()
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = int(width * 0.235)
         self.rect.y = int(height * 0.29)
 
@@ -449,8 +423,18 @@ class Wolf(pygame.sprite.Sprite):
 
     def __init__(self, n=0, kx=0.3, ky=0.5):
         global game_sprites
-        super().__init__(info_sprites)
         super().__init__(game_sprites)
+        d = {0: Wolf.image, 1: Wolf.image2, 2: Wolf.image3, 3: Wolf.image4}
+        self.image = d[n]
+        self.image = pygame.transform.scale(self.image, (int(width * 0.2), int(height * 0.2)))
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.x = int(width * kx)
+        self.y = int(height * ky)
+        self.rect.x = self.x
+        self.rect.y = self.y
+
+    def change_position(self, n=0, kx=0.3, ky=0.5):
         d = {0: Wolf.image, 1: Wolf.image2, 2: Wolf.image3, 3: Wolf.image4}
         self.image = d[n]
         self.image = pygame.transform.scale(self.image, (int(width * 0.2), int(height * 0.2)))
@@ -467,7 +451,6 @@ class Rabbit(pygame.sprite.Sprite):
 
     def __init__(self):
         global game_sprites
-        super().__init__(info_sprites)
         super().__init__(game_sprites)
         self.image = Rabbit.image
         self.image = pygame.transform.scale(self.image, (int(width * 0.1), int(height * 0.1)))
@@ -480,18 +463,15 @@ class Rabbit(pygame.sprite.Sprite):
 
 
 def game_call():
-    global running, wolfs
-    btn_back = Back_Btn()
-    set_game_backgroud_field = GameBackgroundField()
-    rabbit = Rabbit()
+    global running, wolfs, wolf
     if wolfs[0]:
-        set_wolf = Wolf()
+        wolf.change_position()
     elif wolfs[1]:
-        set_wolf1 = Wolf(1, 0.3, 0.5)
+        wolf.change_position(1, 0.3, 0.5)
     elif wolfs[2]:
-        set_wolf2 = Wolf(2, 0.5, 0.5)
+        wolf.change_position(2, 0.5, 0.5)
     else:
-        set_wolf3 = Wolf(3, 0.5, 0.5)
+        wolf.change_position(3, 0.5, 0.5)
     screen.fill((255, 255, 255))
     game_sprites.draw(screen)
     for event in pygame.event.get():
@@ -517,7 +497,7 @@ def game_call():
         pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
 
-# Справка
+# Игра
 
 
 if __name__ == '__main__':
@@ -538,8 +518,14 @@ if __name__ == '__main__':
     read_pass = False
     # -----------------------------------------------------------------------------------------------------------
 
-    # Логин -------------------------------------------------------------------------------------------------------
+    # Группы спрайтов
     login_sprites = pygame.sprite.Group()
+    menu_sprites = pygame.sprite.Group()
+    game_sprites = pygame.sprite.Group()
+    info_sprites = pygame.sprite.Group()
+    # Группы спрайтов
+
+    # Логин -------------------------------------------------------------------------------------------------------
     login_panel = Login_panel()
     input_login = Input_login()
     input_pass = Input_password()
@@ -548,24 +534,38 @@ if __name__ == '__main__':
     # Логин ------------------------------------------------------------------------------------------------------
 
     # Меню ------------------------------------------------------------------------------------------------------
-    menu_sprites = pygame.sprite.Group()
+    menu_background = Menu_Background()
+    ''' 
+    font = pygame.font.Font(None, 50)
+    '''
+    btn_start, btn_settings, btn_info = Btn_Start(), Btn_Settings(), Btn_Info()
+    for n, i in enumerate([btn_start, btn_settings, btn_info]):
+        i.rect.y = int(height * 0.4 + n * (i.rect[3] + int(height / 54)))
+    cup = Cup()
+    exit_btn = Exit_Btn()
     # Меню ----------------------------------------------------------------------------------------------------------
 
     # Игра -----------------------------------------------------------------------------------------------------
-
+    set_game_backgroud_field = GameBackgroundField()
+    rabbit = Rabbit()
+    wolf = Wolf()
     # Игра -----------------------------------------------------------------------------------------------------
 
     # Справка -----------------------------------------------------------------------------------------------------
-
     # Справка -----------------------------------------------------------------------------------------------------
+
+    # Общие переменные
+    btn_back = Back_Btn()
+    # Общие переменные
+
     clock = pygame.time.Clock()
     while running:
         if log_in:
             log_in_call()
         if menu:
-            menu_call()
+            menu_call(pygame.font.Font(None, 50))
         if info:
-            info_call()
+            info_call(pygame.font.Font(None, 40))
         if game:
             game_call()
         clock.tick(60)
