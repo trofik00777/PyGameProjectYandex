@@ -394,9 +394,12 @@ def info_call(font):
 
 # Игра
 
+GAMEBACK_0 = load_image('skins/0/bgf.jpg')
+GAMEBACK_1 = load_image('skins/1/bgf.jpg')
+
 
 class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
-    image = load_image('skins/1/bgf.jpg')
+    image = load_image('skins/0/bgf.jpg')
 
     def __init__(self):
         global game_sprites
@@ -409,17 +412,22 @@ class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
         self.rect.y = int(height * 0.29)
 
 
-WOLF = load_image('skins/1/1.png')
-WOLF1 = load_image('skins/1/2.png')
-WOLF2 = load_image('skins/1/3.png')
-WOLF3 = load_image('skins/1/4.png')
+WOLF_0 = load_image('skins/0/1.png')
+WOLF_01 = load_image('skins/0/2.png')
+WOLF_02 = load_image('skins/0/3.png')
+WOLF_03 = load_image('skins/0/4.png')
+
+WOLF_1 = load_image('skins/1/1.png')
+WOLF_11 = load_image('skins/1/2.png')
+WOLF_12 = load_image('skins/1/3.png')
+WOLF_13 = load_image('skins/1/4.png')
 
 
 class Wolf(pygame.sprite.Sprite):
-    image = WOLF
-    image2 = WOLF1
-    image3 = WOLF2
-    image4 = WOLF3
+    image = WOLF_0
+    image2 = WOLF_01
+    image3 = WOLF_02
+    image4 = WOLF_03
 
     def __init__(self, n=0, kx=0.3, ky=0.5):
         global game_sprites
@@ -446,8 +454,12 @@ class Wolf(pygame.sprite.Sprite):
         self.rect.y = self.y
 
 
+RABBIT_0 = load_image('skins/0/rabbit.png')
+RABBIT_1 = load_image('skins/1/rabbit.png')
+
+
 class Rabbit(pygame.sprite.Sprite):
-    image = load_image('skins/1/rabbit.png')
+    image = RABBIT_0
 
     def __init__(self):
         global game_sprites
