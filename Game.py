@@ -5,6 +5,9 @@ from backend import *
 
 root = tk.Tk()
 
+CONST_SKIN_ID = 0
+CONST_COUNT_OF_SKINS = 2
+
 #  Переменные - ошибочные действия пользователей
 error_menu_limit = False
 error_wrong_data = False
@@ -234,9 +237,10 @@ class Menu_Background(pygame.sprite.Sprite):  # фон меню
     image = load_image("menu_background.jpg")
 
     def __init__(self):
-        global info_sprites, game_sprites
+        global info_sprites, game_sprites, settings_sprites
         super().__init__(menu_sprites)
         super().__init__(game_sprites)
+        super().__init__(settings_sprites)
         super().__init__(info_sprites)
         self.image = Menu_Background.image
         self.rect = self.image.get_rect()
@@ -268,9 +272,13 @@ class Btn_Start(Menu_Btn):
 
 class Btn_Settings(Menu_Btn):
     def update(self, *args):
-        global menu
+        global menu, settings
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):
+            settings = True
+            menu = False
 
 
 class Btn_Info(Menu_Btn):
@@ -348,8 +356,9 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
     image = load_image("btn_back.png")
 
     def __init__(self):
-        global game_sprites
+        global game_sprites, settings_sprites
         super().__init__(info_sprites)
+        super().__init__(settings_sprites)
         super().__init__(game_sprites)
         self.image = Back_Btn.image
         self.rect = self.image.get_rect()
@@ -357,7 +366,7 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
         self.rect.y = int(height * 0.1)
 
     def update(self, *args):
-        global menu, info, game
+        global menu, info, game, settings
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
         else:
@@ -365,6 +374,7 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):
             info = False
+            settings = False
             game = False
             menu = True
 
@@ -392,14 +402,112 @@ def info_call(font):
 
 # Справка
 
+# Настройки
+
+
+class Btn_Choose(pygame.sprite.Sprite):
+    image = load_image("btn_choose.png")
+
+    def __init__(self):
+        super().__init__(settings_sprites)
+        self.image = Btn_Choose.image
+        self.rect = self.image.get_rect()
+        self.rect.x = int(width * 0.4)
+        self.rect.y = int(height * 0.7)
+
+    def update(self, *args):
+        global theme, CONST_SKIN_ID
+        print(CONST_SKIN_ID)
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0], args[0].pos[1])):
+            CONST_SKIN_ID = theme.temp_const
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+
+
+class Btn_Left(pygame.sprite.Sprite):
+    image = load_image("btn_left.png")
+
+    def __init__(self):
+        super().__init__(settings_sprites)
+        self.image = Btn_Left.image
+        self.rect = self.image.get_rect()
+        self.rect.x = int(width * 0.15)
+        self.rect.y = int(height * 0.5)
+
+    def update(self, *args):
+        global theme, CONST_COUNT_OF_SKINS
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0], args[0].pos[1])):
+            if theme.temp_const == 0:
+                theme.temp_const = CONST_COUNT_OF_SKINS - 1
+            else:
+                theme.temp_const -= 1
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+
+
+class Btn_Right(pygame.sprite.Sprite):
+    image = load_image("btn_right.png")
+
+    def __init__(self):
+        super().__init__(settings_sprites)
+        self.image = Btn_Right.image
+        self.rect = self.image.get_rect()
+        self.rect.x = int(width * 0.78)
+        self.rect.y = int(height * 0.5)
+
+    def update(self, *args):
+        global theme, CONST_COUNT_OF_SKINS
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0], args[0].pos[1])):
+            if theme.temp_const == CONST_COUNT_OF_SKINS - 1:
+                theme.temp_const = 0
+            else:
+                theme.temp_const += 1
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+
+
+class Theme(pygame.sprite.Sprite):
+
+    def __init__(self):
+        super().__init__(settings_sprites)
+
+        self.temp_const = 0
+        self.image = load_image('skins/{}/for_settings.png'.format(self.temp_const))
+        self.rect = self.image.get_rect()
+        self.image = pygame.transform.scale(self.image, (self.rect.width, int(self.rect.height * 0.7)))
+        self.rect.x = int(width * 0.235)
+        self.rect.y = int(height * 0.29)
+
+    def update(self, *args):
+        self.image = load_image('skins/{}/for_settings.png'.format(self.temp_const))
+        self.image = pygame.transform.scale(self.image, (self.rect.width, int(self.rect.height * 0.7)))
+
+
+def settings_call():
+    global running
+    screen.fill((255, 255, 255))
+    settings_sprites.draw(screen)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        settings_sprites.update(event)
+    settings_sprites.update()
+    pygame.display.flip()
+    if menu:
+        pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
+# Настройки
+
 # Игра
 
-GAMEBACK_0 = load_image('skins/0/bgf.jpg')
-GAMEBACK_1 = load_image('skins/1/bgf.jpg')
+
+GAMEBACK_0 = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
 
 
 class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
-    image = load_image('skins/0/bgf.jpg')
+    image = GAMEBACK_0
 
     def __init__(self):
         global game_sprites
@@ -411,28 +519,29 @@ class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
         self.rect.x = int(width * 0.235)
         self.rect.y = int(height * 0.29)
 
+    def update(self, *args):
+        global CONST_SKIN_ID
+        self.image = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
+        self.image = pygame.transform.scale(self.image, (int(width * 0.51), int(height * 0.52)))
 
-WOLF_0 = load_image('skins/0/1.png')
-WOLF_01 = load_image('skins/0/2.png')
-WOLF_02 = load_image('skins/0/3.png')
-WOLF_03 = load_image('skins/0/4.png')
 
-WOLF_1 = load_image('skins/1/1.png')
-WOLF_11 = load_image('skins/1/2.png')
-WOLF_12 = load_image('skins/1/3.png')
-WOLF_13 = load_image('skins/1/4.png')
+WOLF = load_image('skins/{}/1.png'.format(CONST_SKIN_ID))
+WOLF_1 = load_image('skins/{}/2.png'.format(CONST_SKIN_ID))
+WOLF_2 = load_image('skins/{}/3.png'.format(CONST_SKIN_ID))
+WOLF_3 = load_image('skins/{}/4.png'.format(CONST_SKIN_ID))
 
 
 class Wolf(pygame.sprite.Sprite):
-    image = WOLF_0
-    image2 = WOLF_01
-    image3 = WOLF_02
-    image4 = WOLF_03
+    '''
+    image = WOLF
+    image2 = WOLF_1
+    image3 = WOLF_2
+    image4 = WOLF_3'''
 
     def __init__(self, n=0, kx=0.3, ky=0.5):
-        global game_sprites
+        global game_sprites, WOLF, WOLF_1, WOLF_2, WOLF_3
         super().__init__(game_sprites)
-        d = {0: Wolf.image, 1: Wolf.image2, 2: Wolf.image3, 3: Wolf.image4}
+        d = {0: WOLF, 1: WOLF_1, 2: WOLF_2, 3: WOLF_3}
         self.image = d[n]
         self.image = pygame.transform.scale(self.image, (int(width * 0.2), int(height * 0.2)))
         self.rect = self.image.get_rect()
@@ -443,7 +552,12 @@ class Wolf(pygame.sprite.Sprite):
         self.rect.y = self.y
 
     def change_position(self, n=0, kx=0.3, ky=0.5):
-        d = {0: Wolf.image, 1: Wolf.image2, 2: Wolf.image3, 3: Wolf.image4}
+        global CONST_SKIN_ID
+        WOLF = load_image('skins/{}/1.png'.format(CONST_SKIN_ID))
+        WOLF_1 = load_image('skins/{}/2.png'.format(CONST_SKIN_ID))
+        WOLF_2 = load_image('skins/{}/3.png'.format(CONST_SKIN_ID))
+        WOLF_3 = load_image('skins/{}/4.png'.format(CONST_SKIN_ID))
+        d = {0: WOLF, 1: WOLF_1, 2: WOLF_2, 3: WOLF_3}
         self.image = d[n]
         self.image = pygame.transform.scale(self.image, (int(width * 0.2), int(height * 0.2)))
         self.rect = self.image.get_rect()
@@ -454,12 +568,11 @@ class Wolf(pygame.sprite.Sprite):
         self.rect.y = self.y
 
 
-RABBIT_0 = load_image('skins/0/rabbit.png')
-RABBIT_1 = load_image('skins/1/rabbit.png')
+RABBIT = load_image('skins/{}/rabbit.png'.format(CONST_SKIN_ID))
 
 
 class Rabbit(pygame.sprite.Sprite):
-    image = RABBIT_0
+    image = RABBIT
 
     def __init__(self):
         global game_sprites
@@ -472,6 +585,11 @@ class Rabbit(pygame.sprite.Sprite):
         self.y = int(height * 0.3)
         self.rect.x = self.x
         self.rect.y = self.y
+
+    def update(self, *args):
+        global CONST_SKIN_ID
+        self.image = load_image('skins/{}/rabbit.png'.format(CONST_SKIN_ID))
+        self.image = pygame.transform.scale(self.image, (int(width * 0.1), int(height * 0.1)))
 
 
 def game_call():
@@ -523,8 +641,11 @@ if __name__ == '__main__':
     log_in = False
     menu = True
     info = False
+    settings = False
     game = False
     wolfs = [1, 0, 0, 0]
+
+    temp_const = 0
 
     read_log = False
     read_pass = False
@@ -534,6 +655,7 @@ if __name__ == '__main__':
     login_sprites = pygame.sprite.Group()
     menu_sprites = pygame.sprite.Group()
     game_sprites = pygame.sprite.Group()
+    settings_sprites = pygame.sprite.Group()
     info_sprites = pygame.sprite.Group()
     # Группы спрайтов
 
@@ -563,12 +685,20 @@ if __name__ == '__main__':
     wolf = Wolf()
     # Игра -----------------------------------------------------------------------------------------------------
 
-    # Справка -----------------------------------------------------------------------------------------------------
-    # Справка -----------------------------------------------------------------------------------------------------
-
     # Общие переменные
     btn_back = Back_Btn()
     # Общие переменные
+
+    # Настройки -----------------------------------------------------------------------------------------------------
+    btn_left = Btn_Left()
+    btn_right = Btn_Right()
+    btn_choose = Btn_Choose()
+    theme = Theme()
+    # Настройки -----------------------------------------------------------------------------------------------------
+
+    # Справка -----------------------------------------------------------------------------------------------------
+    # Справка -----------------------------------------------------------------------------------------------------
+
 
     clock = pygame.time.Clock()
     while running:
@@ -578,6 +708,8 @@ if __name__ == '__main__':
             menu_call(pygame.font.Font(None, 50))
         if info:
             info_call(pygame.font.Font(None, 40))
+        if settings:
+            settings_call()
         if game:
             game_call()
         clock.tick(60)
