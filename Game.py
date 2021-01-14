@@ -362,10 +362,11 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
     image = load_image("btn_back.png")
 
     def __init__(self):
-        global game_sprites, settings_sprites
+        global game_sprites, settings_sprites, pause_sprites
         super().__init__(info_sprites)
         super().__init__(settings_sprites)
         super().__init__(game_sprites)
+        super().__init__(pause_sprites)
         self.image = Back_Btn.image
         self.rect = self.image.get_rect()
         self.rect.x = int(width * 0.1)
@@ -531,6 +532,18 @@ def settings_call():
 # Игра
 
 
+class Pause(pygame.sprite.Sprite):
+    image = load_image('pause.png')
+
+    def __init__(self):
+        super().__init__(pause_sprites)
+
+        self.image = Pause.image
+        self.rect = self.image.get_rect()
+        self.rect.x = int(width / 2 - self.rect[2] / 2)
+        self.rect.y = int(height / 2 - self.rect[3] / 2) + 50
+
+
 GAMEBACK_0 = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
 
 
@@ -684,6 +697,28 @@ class Ball(pygame.sprite.Sprite):
                 self.isRun = False
 
 
+def pause():
+    global btn_back, info, settings, game, menu
+    f = True
+    while f:
+        pause_sprites.draw(screen)
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    f = False
+            if event.type == pygame.MOUSEBUTTONDOWN and \
+                    btn_back.rect.collidepoint((event.pos[0] + 22, event.pos[1] + 5)):
+                info = False
+                settings = False
+                game = False
+                menu = True
+                f = False
+                break
+            pause_sprites.update(event)
+        pause_sprites.update()
+        pygame.display.flip()
+
+
 def game_call():
     global running, wolfs, wolf
     if wolfs[0]:
@@ -715,6 +750,8 @@ def game_call():
         if event.type == pygame.QUIT:
             running = False
         elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                pause()
             if event.key == pygame.K_a:
                 wolfs = [0 for i in range(4)]
                 wolfs[0] = 1
@@ -765,6 +802,7 @@ if __name__ == '__main__':
     game_sprites = pygame.sprite.Group()
     settings_sprites = pygame.sprite.Group()
     info_sprites = pygame.sprite.Group()
+    pause_sprites = pygame.sprite.Group()
     # Группы спрайтов
 
     # Логин -------------------------------------------------------------------------------------------------------
@@ -793,6 +831,7 @@ if __name__ == '__main__':
     rabbit = Rabbit()
     wolf = Wolf()
     first_ball = Ball(0)
+    pause_img = Pause()
     SEC_START = 5
     SEC_LONG = 5
     # Игра -----------------------------------------------------------------------------------------------------
