@@ -275,6 +275,23 @@ class FileSearch(QtWidgets.QWidget, Search_Photos.Ui_Form):
         self.pushButton_egg.clicked.connect(self.get_path)
         self.pushButton_rabbit.clicked.connect(self.get_path)
 
+        self.pushButton.clicked.connect(self.delete_path)
+        self.pushButton_2.clicked.connect(self.delete_path)
+        self.pushButton_3.clicked.connect(self.delete_path)
+
+    def delete_path(self):
+        button = self.sender().objectName()
+
+        if button[-1] == "2":
+            PATH_THEME["яйцо"] = ""
+        elif button[-1] == "3":
+            PATH_THEME["заяц"] = ""
+        elif button[-1] == "n":
+            PATH_THEME["фон"] = ""
+
+        self.view_info()
+
+
     def view_info(self):
         qs = [("фон", self.label_bg), ("яйцо", self.label_egg), ("заяц", self.label_rabbit)]
 
