@@ -8,6 +8,7 @@ root = tk.Tk()
 
 CONST_SKIN_ID = 0
 CONST_COUNT_OF_SKINS = 2
+CUSTOM_THEME = {}
 
 #  Переменные - ошибочные действия пользователей
 error_menu_limit = False
@@ -421,10 +422,11 @@ class Btn_Choose(pygame.sprite.Sprite):
         self.rect.y = int(height * 0.7)
 
     def update(self, *args):
-        global theme, CONST_SKIN_ID
+        global theme, CONST_SKIN_ID, CUSTOM_THEME
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint((args[0].pos[0], args[0].pos[1])):
             CONST_SKIN_ID = theme.temp_const
+            CUSTOM_THEME = {}
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
 
@@ -440,6 +442,10 @@ class Btn_My_Theme(pygame.sprite.Sprite):
         self.rect.y = int(height * 0.7)
 
     def update(self, *args):
+        global CUSTOM_THEME
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0], args[0].pos[1])):
+            CUSTOM_THEME = customize_game_theme()
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
 
@@ -531,11 +537,14 @@ GAMEBACK_0 = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
 class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
 
     def __init__(self):
-        global game_sprites, GAMEBACK_0, CONST_SKIN_ID
+        global game_sprites, GAMEBACK_0, CONST_SKIN_ID, CUSTOM_THEME
         super().__init__(game_sprites)
         self.i = 0
 
-        GAMEBACK_0 = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
+        if CUSTOM_THEME:
+            GAMEBACK_0 = load_image(CUSTOM_THEME['фон'])
+        else:
+            GAMEBACK_0 = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
         self.image = GAMEBACK_0
         self.image = pygame.transform.scale(self.image, (int(width * 0.51), int(height * 0.52)))
         self.rect = self.image.get_rect()
@@ -594,9 +603,12 @@ RABBIT = load_image('skins/{}/rabbit.png'.format(CONST_SKIN_ID))
 class Rabbit(pygame.sprite.Sprite):
 
     def __init__(self):
-        global game_sprites, RABBIT
+        global game_sprites, RABBIT, CUSTOM_THEME
         super().__init__(game_sprites)
-        RABBIT = load_image('skins/{}/rabbit.png'.format(CONST_SKIN_ID))
+        if CUSTOM_THEME:
+            RABBIT = load_image(CUSTOM_THEME['заяц'])
+        else:
+            RABBIT = load_image('skins/{}/rabbit.png'.format(CONST_SKIN_ID))
         self.image = RABBIT
         self.image = pygame.transform.scale(self.image, (int(width * 0.1), int(height * 0.1)))
         self.rect = self.image.get_rect()
@@ -613,27 +625,25 @@ class Rabbit(pygame.sprite.Sprite):
         self.rect.y = self.y
         self.isShow = True
 
-    def update(self, *args):
-        global CONST_SKIN_ID
-        self.image = load_image('skins/{}/rabbit.png'.format(CONST_SKIN_ID))
-        self.image = pygame.transform.scale(self.image, (int(width * 0.1), int(height * 0.1)))
-
     def down(self):
         self.rect.x = -100
         self.rect.y = -100
         self.isShow = False
 
 
-BALL = load_image('skins/0/egg.png')
+BALL = load_image('skins/{}/egg.png'.format(CONST_SKIN_ID))
 
 
 class Ball(pygame.sprite.Sprite):
-    image = BALL
 
     def __init__(self, n):
-        global game_sprites
+        global game_sprites, BALL, CONST_SKIN_ID, CUSTOM_THEME
         super().__init__(game_sprites)
-        self.image = Ball.image
+        if CUSTOM_THEME:
+            BALL = load_image(CUSTOM_THEME['яйцо'])
+        else:
+            BALL = load_image('skins/{}/egg.png'.format(CONST_SKIN_ID))
+        self.image = BALL
         self.image = pygame.transform.scale(self.image, (int(width * 0.025), int(height * 0.025)))
         self.sImage = self.image
         self.rect = self.image.get_rect()
