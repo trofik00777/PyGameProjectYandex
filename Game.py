@@ -2,6 +2,7 @@ import pygame
 import sys
 import tkinter as tk
 from backend import *
+from random import randrange
 
 root = tk.Tk()
 
@@ -494,7 +495,8 @@ class Theme(pygame.sprite.Sprite):
         self.temp_const = 0
         self.image = load_image('skins/{}/theme.png'.format(self.temp_const))
         self.rect = self.image.get_rect()
-        self.image = pygame.transform.scale(self.image, (self.rect.width, int(self.rect.height * 0.7)))
+        self.image = pygame.transform.scale(self.image,
+                                            (self.rect.width, int(self.rect.height * 0.7)))
         self.rect.x = int(width * 0.235)
         self.rect.y = int(height * 0.29)
 
@@ -515,6 +517,8 @@ def settings_call():
     pygame.display.flip()
     if menu:
         pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
+
 # Настройки
 
 # Игра
@@ -566,6 +570,7 @@ class Wolf(pygame.sprite.Sprite):
         self.y = int(height * ky)
         self.rect.x = self.x
         self.rect.y = self.y
+        self.isShow = True
 
     def change_position(self, n=0, kx=0.3, ky=0.5):
         global WOLF, WOLF_1, WOLF_2, WOLF_3
@@ -578,6 +583,7 @@ class Wolf(pygame.sprite.Sprite):
         self.y = int(height * ky)
         self.rect.x = self.x
         self.rect.y = self.y
+        i = 0
 
 
 RABBIT = load_image('skins/{}/rabbit.png'.format(CONST_SKIN_ID))
@@ -595,8 +601,75 @@ class Rabbit(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.x = int(width * 0.295)
         self.y = int(height * 0.3)
+        self.rect.x = -100
+        self.rect.y = -100
+        self.isShow = False
+        self.long = 0
+
+    def up(self):
         self.rect.x = self.x
         self.rect.y = self.y
+        self.isShow = True
+
+    def update(self, *args):
+        global CONST_SKIN_ID
+        self.image = load_image('skins/{}/rabbit.png'.format(CONST_SKIN_ID))
+        self.image = pygame.transform.scale(self.image, (int(width * 0.1), int(height * 0.1)))
+
+    def down(self):
+        self.rect.x = -100
+        self.rect.y = -100
+        self.isShow = False
+
+
+BALL = load_image('skins/0/egg.png')
+
+
+class Ball(pygame.sprite.Sprite):
+    image = BALL
+
+    def __init__(self, n):
+        global game_sprites
+        super().__init__(game_sprites)
+        self.image = Ball.image
+        self.image = pygame.transform.scale(self.image, (int(width * 0.025), int(height * 0.025)))
+        self.sImage = self.image
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.rect.x = int(width)
+        self.rect.y = int(height)
+        self.long = 5 * FPS
+        self.n = n
+        if n == 0:
+            self.x = 0.265
+            self.y = 0.465
+            self.steps = [(10, 10), (10, 10), (10, 10)]
+            self.step = 0
+        self.isRun = False
+
+    def change_position(self, x, y):
+        self.rect.x = self.rect.x + x
+        self.rect.y = self.rect.y + y
+
+    def rotate(self, rot):
+        self.image = pygame.transform.rotate(self.image, rot)
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def start(self, tick):
+        self.rect.x = int(width * self.x)
+        self.rect.y = int(height * self.y)
+        self.long = 5 * FPS - tick // 200
+        self.image = self.sImage
+        self.mask = pygame.mask.from_surface(self.image)
+        self.isRun = True
+        self.start_tick = tick
+
+    def move(self, tick):
+        if tick == self.start_tick + self.long * (self.step + 1):
+            self.change_position(*self.steps[self.step])
+            self.step += 1
+            if self.step == 3:
+                self.isRun = False
 
 
 def game_call():
@@ -606,10 +679,25 @@ def game_call():
     elif wolfs[1]:
         wolf.change_position(1, 0.3, 0.5)
     elif wolfs[2]:
-        wolf.change_position(2, 0.5, 0.5)
+        wolf.change_position(2, 0.47, 0.5)
     else:
-        wolf.change_position(3, 0.5, 0.5)
+        wolf.change_position(3, 0.47, 0.5)
+    set_game_background_field.i += 1
     screen.fill((255, 255, 255))
+
+    if rabbit.isShow:
+        rabbit.long += 1
+    if rabbit.long > SEC_LONG * FPS + randrange(SEC_LONG * FPS // -2, SEC_LONG * FPS // 2):
+        rabbit.long = 0
+        rabbit.down()
+    if set_game_background_field.i % \
+            (SEC_START * FPS + randrange(SEC_START * FPS // -2, SEC_START * FPS // 2)) == 0:
+        rabbit.up()
+    if set_game_background_field.i == FPS * 3:
+        first_ball.start(set_game_background_field.i)
+    if first_ball.isRun:
+        first_ball.move(set_game_background_field.i)
+
     game_sprites.draw(screen)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -656,6 +744,7 @@ if __name__ == '__main__':
 
     read_log = False
     read_pass = False
+    FPS = 60
     # -----------------------------------------------------------------------------------------------------------
 
     # Группы спрайтов
@@ -688,9 +777,12 @@ if __name__ == '__main__':
     # Меню ----------------------------------------------------------------------------------------------------------
 
     # Игра -----------------------------------------------------------------------------------------------------
-    set_game_backgroud_field = GameBackgroundField()
+    set_game_background_field = GameBackgroundField()
     rabbit = Rabbit()
     wolf = Wolf()
+    first_ball = Ball(0)
+    SEC_START = 5
+    SEC_LONG = 5
     # Игра -----------------------------------------------------------------------------------------------------
 
     # Общие переменные
@@ -708,7 +800,6 @@ if __name__ == '__main__':
     # Справка -----------------------------------------------------------------------------------------------------
     # Справка -----------------------------------------------------------------------------------------------------
 
-
     clock = pygame.time.Clock()
     while running:
         if log_in:
@@ -721,5 +812,5 @@ if __name__ == '__main__':
             settings_call()
         if game:
             game_call()
-        clock.tick(60)
+        clock.tick(FPS)
     pygame.quit()
