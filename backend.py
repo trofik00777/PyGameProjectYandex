@@ -1,9 +1,19 @@
+import sys
+
 import pymysql
 import hashlib
 import ftplib
 import os
 import shutil
 
+from PyQt5 import QtCore, QtGui
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import Qt
+
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QHeaderView, QInputDialog, QLineEdit, QLabel, QFileDialog, QSpinBox, QMessageBox
+
+import Search_Photos
 
 HOST = "f0478423.xsph.ru"
 USER = "f0478423_pygame_wolf_and_eggs"
@@ -239,8 +249,81 @@ def upload():
     print(list_dir)
 
 
+#----------------------------------------костомизация игры-------------------------
+PATH_THEME = {"фон": "",
+              "яйцо": "",
+              "заяц": ""}
+
+
+REFACTOR = {"фон": "bgf.jpg",
+            "яйцо": "egg.png",
+            "заяц": "rabbit.png"}
+
+class FileSearch(QtWidgets.QWidget, Search_Photos.Ui_Form):
+    def __init__(self):
+        super().__init__()
+
+        self.setupUi(self)
+
+        # self.fname = self.get_path(question)
+        self.view_info()
+
+        self.build_handlers()
+
+    def build_handlers(self):
+        self.pushButton_bg.clicked.connect(self.get_path)
+        self.pushButton_egg.clicked.connect(self.get_path)
+        self.pushButton_rabbit.clicked.connect(self.get_path)
+
+    def view_info(self):
+        qs = [("фон", self.label_bg), ("яйцо", self.label_egg), ("заяц", self.label_rabbit)]
+
+        for q in qs:
+            q[1].setText(PATH_THEME[q[0]])
+
+    def get_path(self):
+        mode = self.sender().text()
+
+        fname = QFileDialog.getOpenFileName(
+            self, f'Выбрать картинку для - "{mode}"', '.',
+            'Картинка (*.jpg);;Картинка (*.png)')[0]
+
+        PATH_THEME[mode.lower()] = fname
+
+        self.view_info()
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        pass
+
+
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+
+def customize_game_theme():
+    '''кастомизация игры'''
+    get_path_to_file()
+    print(PATH_THEME)
+    return PATH_THEME
+
+
+
+def get_path_to_file():
+    app = QtWidgets.QApplication(sys.argv)
+    start_window = FileSearch()
+    start_window.show()
+    sys.excepthook = except_hook
+    app.exec_()
+
+    # global PATH_THEME
+    # print(PATH_THEME)
+    for path in PATH_THEME:
+        if not PATH_THEME[path]:
+            PATH_THEME[path] = f"skins/0/{REFACTOR[path]}"
+
+
 if __name__ == "__main__":
     # print(get_top10(2))
     # print(get_rank_player("log", 1))
     # update_rating("Gleb", 2, 21)
-    upload_all_images()
+    customize_game_theme()
