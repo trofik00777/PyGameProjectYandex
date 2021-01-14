@@ -259,7 +259,7 @@ class Menu_Btn(pygame.sprite.Sprite):  # кнопки меню
 
 class Btn_Start(Menu_Btn):
     def update(self, *args):
-        global menu, game
+        global menu, game, game_sprites
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
         else:
@@ -268,6 +268,8 @@ class Btn_Start(Menu_Btn):
                 self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):
             game = True
             menu = False
+            for i in game_sprites:
+                i.__init__()
 
 
 class Btn_Settings(Menu_Btn):
@@ -412,7 +414,7 @@ class Btn_Choose(pygame.sprite.Sprite):
         super().__init__(settings_sprites)
         self.image = Btn_Choose.image
         self.rect = self.image.get_rect()
-        self.rect.x = int(width * 0.4)
+        self.rect.x = int(width * 0.3)
         self.rect.y = int(height * 0.7)
 
     def update(self, *args):
@@ -421,6 +423,21 @@ class Btn_Choose(pygame.sprite.Sprite):
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint((args[0].pos[0], args[0].pos[1])):
             CONST_SKIN_ID = theme.temp_const
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+
+
+class Btn_My_Theme(pygame.sprite.Sprite):
+    image = load_image("btn_my_theme.png")
+
+    def __init__(self):
+        super().__init__(settings_sprites)
+        self.image = Btn_My_Theme.image
+        self.rect = self.image.get_rect()
+        self.rect.x = int(width * 0.52)
+        self.rect.y = int(height * 0.7)
+
+    def update(self, *args):
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
 
@@ -475,14 +492,14 @@ class Theme(pygame.sprite.Sprite):
         super().__init__(settings_sprites)
 
         self.temp_const = 0
-        self.image = load_image('skins/{}/for_settings.png'.format(self.temp_const))
+        self.image = load_image('skins/{}/theme.png'.format(self.temp_const))
         self.rect = self.image.get_rect()
         self.image = pygame.transform.scale(self.image, (self.rect.width, int(self.rect.height * 0.7)))
         self.rect.x = int(width * 0.235)
         self.rect.y = int(height * 0.29)
 
     def update(self, *args):
-        self.image = load_image('skins/{}/for_settings.png'.format(self.temp_const))
+        self.image = load_image('skins/{}/theme.png'.format(self.temp_const))
         self.image = pygame.transform.scale(self.image, (self.rect.width, int(self.rect.height * 0.7)))
 
 
@@ -507,22 +524,17 @@ GAMEBACK_0 = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
 
 
 class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
-    image = GAMEBACK_0
 
     def __init__(self):
-        global game_sprites
+        global game_sprites, GAMEBACK_0, CONST_SKIN_ID
         super().__init__(game_sprites)
 
-        self.image = GameBackgroundField.image
+        GAMEBACK_0 = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
+        self.image = GAMEBACK_0
         self.image = pygame.transform.scale(self.image, (int(width * 0.51), int(height * 0.52)))
         self.rect = self.image.get_rect()
         self.rect.x = int(width * 0.235)
         self.rect.y = int(height * 0.29)
-
-    def update(self, *args):
-        global CONST_SKIN_ID
-        self.image = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
-        self.image = pygame.transform.scale(self.image, (int(width * 0.51), int(height * 0.52)))
 
 
 WOLF = load_image('skins/{}/1.png'.format(CONST_SKIN_ID))
@@ -539,8 +551,12 @@ class Wolf(pygame.sprite.Sprite):
     image4 = WOLF_3'''
 
     def __init__(self, n=0, kx=0.3, ky=0.5):
-        global game_sprites, WOLF, WOLF_1, WOLF_2, WOLF_3
+        global game_sprites, WOLF, WOLF_1, WOLF_2, WOLF_3, CONST_SKIN_ID
         super().__init__(game_sprites)
+        WOLF = load_image('skins/{}/1.png'.format(CONST_SKIN_ID))
+        WOLF_1 = load_image('skins/{}/2.png'.format(CONST_SKIN_ID))
+        WOLF_2 = load_image('skins/{}/3.png'.format(CONST_SKIN_ID))
+        WOLF_3 = load_image('skins/{}/4.png'.format(CONST_SKIN_ID))
         d = {0: WOLF, 1: WOLF_1, 2: WOLF_2, 3: WOLF_3}
         self.image = d[n]
         self.image = pygame.transform.scale(self.image, (int(width * 0.2), int(height * 0.2)))
@@ -552,11 +568,7 @@ class Wolf(pygame.sprite.Sprite):
         self.rect.y = self.y
 
     def change_position(self, n=0, kx=0.3, ky=0.5):
-        global CONST_SKIN_ID
-        WOLF = load_image('skins/{}/1.png'.format(CONST_SKIN_ID))
-        WOLF_1 = load_image('skins/{}/2.png'.format(CONST_SKIN_ID))
-        WOLF_2 = load_image('skins/{}/3.png'.format(CONST_SKIN_ID))
-        WOLF_3 = load_image('skins/{}/4.png'.format(CONST_SKIN_ID))
+        global WOLF, WOLF_1, WOLF_2, WOLF_3
         d = {0: WOLF, 1: WOLF_1, 2: WOLF_2, 3: WOLF_3}
         self.image = d[n]
         self.image = pygame.transform.scale(self.image, (int(width * 0.2), int(height * 0.2)))
@@ -572,12 +584,12 @@ RABBIT = load_image('skins/{}/rabbit.png'.format(CONST_SKIN_ID))
 
 
 class Rabbit(pygame.sprite.Sprite):
-    image = RABBIT
 
     def __init__(self):
-        global game_sprites
+        global game_sprites, RABBIT
         super().__init__(game_sprites)
-        self.image = Rabbit.image
+        RABBIT = load_image('skins/{}/rabbit.png'.format(CONST_SKIN_ID))
+        self.image = RABBIT
         self.image = pygame.transform.scale(self.image, (int(width * 0.1), int(height * 0.1)))
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
@@ -585,11 +597,6 @@ class Rabbit(pygame.sprite.Sprite):
         self.y = int(height * 0.3)
         self.rect.x = self.x
         self.rect.y = self.y
-
-    def update(self, *args):
-        global CONST_SKIN_ID
-        self.image = load_image('skins/{}/rabbit.png'.format(CONST_SKIN_ID))
-        self.image = pygame.transform.scale(self.image, (int(width * 0.1), int(height * 0.1)))
 
 
 def game_call():
@@ -665,6 +672,7 @@ if __name__ == '__main__':
     input_pass = Input_password()
     sign_up = Sign_in()
     register = Register()
+    register.__init__()
     # Логин ------------------------------------------------------------------------------------------------------
 
     # Меню ------------------------------------------------------------------------------------------------------
@@ -693,6 +701,7 @@ if __name__ == '__main__':
     btn_left = Btn_Left()
     btn_right = Btn_Right()
     btn_choose = Btn_Choose()
+    btn_my_theme = Btn_My_Theme()
     theme = Theme()
     # Настройки -----------------------------------------------------------------------------------------------------
 
