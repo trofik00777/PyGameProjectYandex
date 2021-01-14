@@ -260,7 +260,7 @@ class Menu_Btn(pygame.sprite.Sprite):  # кнопки меню
 
 class Btn_Start(Menu_Btn):
     def update(self, *args):
-        global menu, game, game_sprites
+        global menu, game, set_game_background_field, wolf, rabbit, first_ball
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
         else:
@@ -269,8 +269,10 @@ class Btn_Start(Menu_Btn):
                 self.rect.collidepoint((args[0].pos[0] + 22, args[0].pos[1] + 5)):
             game = True
             menu = False
-            for i in game_sprites:
-                i.__init__()
+            set_game_background_field.__init__()
+            wolf.__init__()
+            rabbit.__init__()
+            first_ball.__init__(0)
 
 
 class Btn_Settings(Menu_Btn):
@@ -420,7 +422,6 @@ class Btn_Choose(pygame.sprite.Sprite):
 
     def update(self, *args):
         global theme, CONST_SKIN_ID
-        print(CONST_SKIN_ID)
         if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
                 self.rect.collidepoint((args[0].pos[0], args[0].pos[1])):
             CONST_SKIN_ID = theme.temp_const
@@ -532,6 +533,7 @@ class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
     def __init__(self):
         global game_sprites, GAMEBACK_0, CONST_SKIN_ID
         super().__init__(game_sprites)
+        self.i = 0
 
         GAMEBACK_0 = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
         self.image = GAMEBACK_0
