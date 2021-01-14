@@ -3,6 +3,7 @@ import sys
 import tkinter as tk
 from backend import *
 from random import randrange
+from math import radians
 
 root = tk.Tk()
 
@@ -274,6 +275,9 @@ class Btn_Start(Menu_Btn):
             wolf.__init__()
             rabbit.__init__()
             first_ball.__init__(0)
+            second_ball.__init__(1)
+            third_ball.__init__(2)
+            fourth_ball.__init__(3)
 
 
 class Btn_Settings(Menu_Btn):
@@ -510,7 +514,8 @@ class Theme(pygame.sprite.Sprite):
 
     def update(self, *args):
         self.image = load_image('skins/{}/theme.png'.format(self.temp_const))
-        self.image = pygame.transform.scale(self.image, (self.rect.width, int(self.rect.height * 0.7)))
+        self.image = pygame.transform.scale(self.image,
+                                            (self.rect.width, int(self.rect.height * 0.7)))
 
 
 def settings_call():
@@ -548,7 +553,6 @@ GAMEBACK_0 = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
 
 
 class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
-
     def __init__(self):
         global game_sprites, GAMEBACK_0, CONST_SKIN_ID, CUSTOM_THEME
         super().__init__(game_sprites)
@@ -586,6 +590,7 @@ class Wolf(pygame.sprite.Sprite):
         WOLF_2 = load_image('skins/{}/3.png'.format(CONST_SKIN_ID))
         WOLF_3 = load_image('skins/{}/4.png'.format(CONST_SKIN_ID))
         d = {0: WOLF, 1: WOLF_1, 2: WOLF_2, 3: WOLF_3}
+        self.n = n
         self.image = d[n]
         self.image = pygame.transform.scale(self.image, (int(width * 0.2), int(height * 0.2)))
         self.rect = self.image.get_rect()
@@ -604,6 +609,7 @@ class Wolf(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
         self.x = int(width * kx)
+        self.n = n
         self.y = int(height * ky)
         self.rect.x = self.x
         self.rect.y = self.y
@@ -639,8 +645,8 @@ class Rabbit(pygame.sprite.Sprite):
         self.isShow = True
 
     def down(self):
-        self.rect.x = -100
-        self.rect.y = -100
+        self.rect.x = -400
+        self.rect.y = -400
         self.isShow = False
 
 
@@ -663,13 +669,35 @@ class Ball(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = int(width)
         self.rect.y = int(height)
-        self.long = 5 * FPS
+        self.long = 3 * FPS
+        self.wait = randrange(FPS * 2, FPS * 15)
         self.n = n
+        print(n)
+        self.isWolfCatch = False
         if n == 0:
             self.x = 0.265
-            self.y = 0.465
-            self.steps = [(10, 10), (10, 10), (10, 10)]
+            self.y = 0.58
+            self.steps = [(30, 5), (25, 5), (45, 30)]
             self.step = 0
+            self.k = 0
+        elif n == 1:
+            self.x = 0.265
+            self.y = 0.465
+            self.steps = [(30, 5), (25, 5), (45, 30)]
+            self.step = 0
+            self.k = 0
+        elif n == 2:
+            self.x = 0.69
+            self.y = 0.58
+            self.steps = [(-50, 14), (-50, 7), (-45, 0)]
+            self.step = 0
+            self.k = 0
+        elif n == 3:
+            self.x = 0.69
+            self.y = 0.46
+            self.steps = [(-50, 14), (-50, 7), (-45, 0)]
+            self.step = 0
+            self.k = 0
         self.isRun = False
 
     def change_position(self, x, y):
@@ -681,20 +709,49 @@ class Ball(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def start(self, tick):
-        self.rect.x = int(width * self.x)
-        self.rect.y = int(height * self.y)
-        self.long = 5 * FPS - tick // 200
-        self.image = self.sImage
-        self.mask = pygame.mask.from_surface(self.image)
-        self.isRun = True
-        self.start_tick = tick
+        if self.k > self.wait:
+            self.rect.x = int(width * self.x)
+            self.rect.y = int(height * self.y)
+            self.long = 3 * FPS - tick // 20
+            if self.long < FPS // 2:
+                self.long = FPS // 2
+            self.image = self.sImage
+            self.mask = pygame.mask.from_surface(self.image)
+            self.isRun = True
+            self.start_tick = tick
+            print(self.long)
+        self.k += 1
 
     def move(self, tick):
-        if tick == self.start_tick + self.long * (self.step + 1):
-            self.change_position(*self.steps[self.step])
-            self.step += 1
+        if tick == self.start_tick + self.long // 3 * (self.step + 1):
             if self.step == 3:
-                self.isRun = False
+                self.main_opt()
+                self.fail()
+            else:
+                if self.step == 2 and wolf.n == self.n:
+                    self.main_opt()
+                    self.give_point()
+                else:
+                    self.change_position(*self.steps[self.step])
+                    self.rotate([30, -30, 30, -30][self.n])
+                    self.step += 1
+        elif self.start_tick + self.long // 3 * 3 < tick < self.start_tick + self.long // 3 * 4 \
+                and wolf.n == self.n:
+            self.main_opt()
+            self.give_point()
+    def fail(self):
+        pass
+
+    def main_opt(self):
+        self.k = 0
+        self.isRun = False
+        self.wait = randrange(0, FPS * 5)
+        self.step = 0
+        self.isWolfCatch = False
+        self.change_position(-1000, -1000)
+
+    def give_point(self):
+        pass
 
 
 def pause():
@@ -740,10 +797,23 @@ def game_call():
     if set_game_background_field.i % \
             (SEC_START * FPS + randrange(SEC_START * FPS // -2, SEC_START * FPS // 2)) == 0:
         rabbit.up()
-    if set_game_background_field.i == FPS * 3:
-        first_ball.start(set_game_background_field.i)
+
     if first_ball.isRun:
         first_ball.move(set_game_background_field.i)
+    else:
+        first_ball.start(set_game_background_field.i)
+    if second_ball.isRun:
+        second_ball.move(set_game_background_field.i)
+    else:
+        second_ball.start(set_game_background_field.i)
+    if third_ball.isRun:
+        third_ball.move(set_game_background_field.i)
+    else:
+        third_ball.start(set_game_background_field.i)
+    if fourth_ball.isRun:
+        fourth_ball.move(set_game_background_field.i)
+    else:
+        fourth_ball.start(set_game_background_field.i)
 
     game_sprites.draw(screen)
     for event in pygame.event.get():
@@ -831,6 +901,9 @@ if __name__ == '__main__':
     rabbit = Rabbit()
     wolf = Wolf()
     first_ball = Ball(0)
+    second_ball = Ball(1)
+    third_ball = Ball(2)
+    fourth_ball = Ball(3)
     pause_img = Pause()
     SEC_START = 5
     SEC_LONG = 5
