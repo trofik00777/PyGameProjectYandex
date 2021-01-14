@@ -279,6 +279,8 @@ class Btn_Start(Menu_Btn):
             second_ball.__init__(1)
             third_ball.__init__(2)
             fourth_ball.__init__(3)
+            broken.__init__()
+            broken_2.__init__(1)
 
 
 class Btn_Settings(Menu_Btn):
@@ -659,12 +661,56 @@ class Rabbit(pygame.sprite.Sprite):
 
 
 BALL = load_image('skins/{}/egg.png'.format(CONST_SKIN_ID))
+BROKEN_EGG = load_image('skins/{}/broken_egg.png'.format(CONST_SKIN_ID))
+
+
+class BrokenEgg(pygame.sprite.Sprite):
+    def __init__(self, n=0):
+        global game_sprites, BALL, CONST_SKIN_ID, CUSTOM_THEME
+        super().__init__(game_sprites)
+        if CUSTOM_THEME:
+            BALL = load_image(CUSTOM_THEME['яйцо'])
+        else:
+            BALL = load_image('skins/{}/broken_egg.png'.format(CONST_SKIN_ID))
+        self.image = BALL
+        self.image = pygame.transform.scale(self.image, (int(width * 0.04), int(height * 0.04)))
+        self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
+        self.k = 5
+        if n == 0:
+            self.x = int(width * 0.33)
+            self.y = int(height * 0.7)
+
+        else:
+            self.x = int(width * 0.6)
+            self.y = int(height * 0.7)
+        self.rect.x = - 1000
+        self.rect.y = - 1000
+
+    def move(self):
+        self.rect.y = self.y
+        self.rect.x = self.x
+        self.k = 0
+
+    def update(self, *args, **kwargs) -> None:
+        self.k += 1
+        if self.k == FPS * 2:
+            self.rect.x = - 1000
+            self.rect.y = - 1000
+
+
+def draw_text(surf, text, size, x, y):
+    font = pygame.font.SysFont('Arial', size)
+    text_surface = font.render(text, True, 'BLACK')
+    text_rect = text_surface.get_rect()
+    text_rect.midtop = (x, y)
+    surf.blit(text_surface, text_rect)
 
 
 class Ball(pygame.sprite.Sprite):
 
     def __init__(self, n):
-        global game_sprites, BALL, CONST_SKIN_ID, CUSTOM_THEME
+        global game_sprites, BALL, CONST_SKIN_ID, CUSTOM_THEME, point_count
         super().__init__(game_sprites)
         if CUSTOM_THEME:
             BALL = load_image(CUSTOM_THEME['яйцо'])
@@ -717,10 +763,13 @@ class Ball(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
 
     def start(self, tick):
-        if self.k > self.wait:
+        if self.k > self.wait and [first_ball.isRun,
+                                   second_ball.isRun,
+                                   third_ball.isRun,
+                                   fourth_ball.isRun].count(True) < 3 + (2 * level_game):
             self.rect.x = int(width * self.x)
             self.rect.y = int(height * self.y)
-            self.long = 3 * FPS - tick // 20
+            self.long = 5 * FPS - tick // 600
             if self.long < FPS // 2:
                 self.long = FPS // 2
             self.image = self.sImage
@@ -747,8 +796,12 @@ class Ball(pygame.sprite.Sprite):
                 and wolf.n == self.n:
             self.main_opt()
             self.give_point()
+
     def fail(self):
-        pass
+        if self.n in {0, 1}:
+            broken.move()
+        else:
+            broken_2.move()
 
     def main_opt(self):
         self.k = 0
@@ -759,7 +812,10 @@ class Ball(pygame.sprite.Sprite):
         self.change_position(-1000, -1000)
 
     def give_point(self):
-        pass
+        global point_count
+        point_count += 1
+        if point_count % 100 == 0:
+            self.long += FPS + randrange(FPS * -0.3, FPS * 0.3)
 
 
 def pause():
@@ -785,7 +841,7 @@ def pause():
 
 
 def game_call():
-    global running, wolfs, wolf
+    global running, wolfs, wolf, point_count
     if wolfs[0]:
         wolf.change_position()
     elif wolfs[1]:
@@ -824,6 +880,7 @@ def game_call():
         fourth_ball.start(set_game_background_field.i)
 
     game_sprites.draw(screen)
+    draw_text(screen, str(point_count), 40, width // 2, height // 4 * 1 + height // 14)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -875,6 +932,8 @@ def rating_call(font):
     pygame.display.flip()
     if menu:
         pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
+
+
 # Рейтинг
 
 
@@ -940,9 +999,13 @@ if __name__ == '__main__':
     second_ball = Ball(1)
     third_ball = Ball(2)
     fourth_ball = Ball(3)
+    broken = BrokenEgg()
+    broken_2 = BrokenEgg(1)
     pause_img = Pause()
     SEC_START = 5
     SEC_LONG = 5
+    level_game = 0
+    point_count = 0
     # Игра -----------------------------------------------------------------------------------------------------
 
     # Общие переменные
