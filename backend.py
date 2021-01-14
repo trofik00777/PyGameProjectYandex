@@ -1,9 +1,19 @@
+import sys
+
 import pymysql
 import hashlib
 import ftplib
 import os
 import shutil
 
+from PyQt5 import QtCore, QtGui
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import Qt
+
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QHeaderView, QInputDialog, QLineEdit, QLabel, QFileDialog, QSpinBox, QMessageBox
+
+import Search_Photos
 
 HOST = "f0478423.xsph.ru"
 USER = "f0478423_pygame_wolf_and_eggs"
@@ -237,6 +247,55 @@ def upload():
     if dot2 >= 0:
         del list_dir[dot2]
     print(list_dir)
+
+
+#----------------------------------------костомизация игры-------------------------
+PATH_THEME = {"фон": "",
+              "яйцо": "",
+              "заяц": ""}
+
+
+REFACTOR = {"фон": "bgf.jpg",
+            "яйцо": "egg.png",
+            "заяц": "rabbit.png"}
+
+class FileSearch(QtWidgets.QWidget, Search_Photos.Ui_Form):
+    def __init__(self, question: str):
+        super().__init__()
+
+        self.setupUi(self)
+
+        # self.fname = self.get_path(question)
+        self.q = question
+        self.view_info()
+
+        self.build_handlers()
+
+    def build_handlers(self):
+        self.pushButton_bg.clicked.connect(self.get_path)
+        self.pushButton_egg.clicked.connect(self.get_path)
+        self.pushButton_rabbit.clicked.connect(self.get_path)
+
+    def view_info(self):
+        qs = [("фон", self.label_bg), ("яйцо", self.label_egg), ("заяц", self.label_rabbit)]
+
+        for q in qs:
+            q[1].setText(PATH_THEME[q[0]])
+
+    def get_path(self):
+        mode = self.sender().text()
+
+        fname = QFileDialog.getOpenFileName(
+            self, f'Выбрать картинку для - "{mode}"', '.',
+            'Картинка (*.jpg);;Картинка (*.png)')[0]
+
+        PATH_THEME[mode.lower()] = fname
+
+        self.view_info()
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        pass
+
 
 
 if __name__ == "__main__":
