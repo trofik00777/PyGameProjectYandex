@@ -260,13 +260,12 @@ REFACTOR = {"фон": "bgf.jpg",
             "заяц": "rabbit.png"}
 
 class FileSearch(QtWidgets.QWidget, Search_Photos.Ui_Form):
-    def __init__(self, question: str):
+    def __init__(self):
         super().__init__()
 
         self.setupUi(self)
 
         # self.fname = self.get_path(question)
-        self.q = question
         self.view_info()
 
         self.build_handlers()
@@ -297,9 +296,34 @@ class FileSearch(QtWidgets.QWidget, Search_Photos.Ui_Form):
         pass
 
 
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+
+def customize_game_theme():
+    '''кастомизация игры'''
+    get_path_to_file()
+    print(PATH_THEME)
+    return PATH_THEME
+
+
+
+def get_path_to_file():
+    app = QtWidgets.QApplication(sys.argv)
+    start_window = FileSearch()
+    start_window.show()
+    sys.excepthook = except_hook
+    app.exec_()
+
+    # global PATH_THEME
+    # print(PATH_THEME)
+    for path in PATH_THEME:
+        if not PATH_THEME[path]:
+            PATH_THEME[path] = f"skins/0/{REFACTOR[path]}"
+
 
 if __name__ == "__main__":
     # print(get_top10(2))
     # print(get_rank_player("log", 1))
     # update_rating("Gleb", 2, 21)
-    upload_all_images()
+    customize_game_theme()
