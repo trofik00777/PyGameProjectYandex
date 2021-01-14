@@ -239,11 +239,12 @@ class Menu_Background(pygame.sprite.Sprite):  # фон меню
     image = load_image("menu_background.jpg")
 
     def __init__(self):
-        global info_sprites, game_sprites, settings_sprites
+        global info_sprites, game_sprites, settings_sprites, rating_sprites
         super().__init__(menu_sprites)
         super().__init__(game_sprites)
         super().__init__(settings_sprites)
         super().__init__(info_sprites)
+        super().__init__(rating_sprites)
         self.image = Menu_Background.image
         self.rect = self.image.get_rect()
         self.rect.bottom = height
@@ -328,6 +329,11 @@ class Cup(pygame.sprite.Sprite):
         self.rect.y = int(height * 0.75 - self.rect[3] / 2)
 
     def update(self, *args):
+        global menu, rate
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0], args[0].pos[1])):
+            rate = True
+            menu = False
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
 
@@ -362,18 +368,19 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
     image = load_image("btn_back.png")
 
     def __init__(self):
-        global game_sprites, settings_sprites, pause_sprites
+        global game_sprites, settings_sprites, pause_sprites, rating_sprites
         super().__init__(info_sprites)
         super().__init__(settings_sprites)
         super().__init__(game_sprites)
         super().__init__(pause_sprites)
+        super().__init__(rating_sprites)
         self.image = Back_Btn.image
         self.rect = self.image.get_rect()
         self.rect.x = int(width * 0.1)
         self.rect.y = int(height * 0.1)
 
     def update(self, *args):
-        global menu, info, game, settings
+        global menu, info, game, settings, rate
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
         else:
@@ -384,6 +391,7 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
             settings = False
             game = False
             menu = True
+            rate = False
 
 
 with open('info.txt', mode='r', encoding='utf-8') as f:
@@ -572,11 +580,11 @@ WOLF_3 = load_image('skins/{}/4.png'.format(CONST_SKIN_ID))
 
 
 class Wolf(pygame.sprite.Sprite):
-    '''
+    """
     image = WOLF
     image2 = WOLF_1
     image3 = WOLF_2
-    image4 = WOLF_3'''
+    image4 = WOLF_3"""
 
     def __init__(self, n=0, kx=0.3, ky=0.5):
         global game_sprites, WOLF, WOLF_1, WOLF_2, WOLF_3, CONST_SKIN_ID
@@ -773,6 +781,32 @@ def game_call():
 
 # Игра
 
+# Рейтинг
+
+
+def rating_call(font):
+    global running
+    screen.fill((255, 255, 255))
+    text = font.render('Топ 10 игроков( Позиция / Логин / Рекорд )', True, (0, 0, 0))
+    txt_rect = text.get_rect(center=(int(width / 2),
+                                     int(height / 2) * 0.7))
+    rating_sprites.draw(screen)
+    screen.blit(text, txt_rect)
+    for n, i in enumerate(get_top10(1)):
+        text = font.render(' '.join(map(str, list(i))), True, (0, 0, 0))
+        txt_rect = text.get_rect(center=(int(width / 2),
+                                         int(height / 2) * 0.8 + n * int(height / 2) * 0.08))
+        screen.blit(text, txt_rect)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        rating_sprites.update(event)
+    rating_sprites.update()
+    pygame.display.flip()
+    if menu:
+        pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_ARROW)
+# Рейтинг
+
 
 if __name__ == '__main__':
     pygame.init()
@@ -787,6 +821,7 @@ if __name__ == '__main__':
     info = False
     settings = False
     game = False
+    rate = False
     wolfs = [1, 0, 0, 0]
 
     temp_const = 0
@@ -803,6 +838,7 @@ if __name__ == '__main__':
     settings_sprites = pygame.sprite.Group()
     info_sprites = pygame.sprite.Group()
     pause_sprites = pygame.sprite.Group()
+    rating_sprites = pygame.sprite.Group()
     # Группы спрайтов
 
     # Логин -------------------------------------------------------------------------------------------------------
@@ -863,5 +899,7 @@ if __name__ == '__main__':
             settings_call()
         if game:
             game_call()
+        if rate:
+            rating_call(pygame.font.Font(None, 60))
         clock.tick(FPS)
     pygame.quit()
