@@ -300,8 +300,17 @@ def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
 
 
+def set_default_custom():
+    qs = ["фон", "яйцо", "заяц"]
+
+    for q in qs:
+        if PATH_THEME[q] == f"skins/0/{REFACTOR[q]}":
+            PATH_THEME[q] = ""
+
+
 def customize_game_theme():
     '''кастомизация игры'''
+    set_default_custom()
     get_path_to_file()
     print(PATH_THEME)
     return PATH_THEME
