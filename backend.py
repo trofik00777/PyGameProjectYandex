@@ -275,6 +275,23 @@ class FileSearch(QtWidgets.QWidget, Search_Photos.Ui_Form):
         self.pushButton_egg.clicked.connect(self.get_path)
         self.pushButton_rabbit.clicked.connect(self.get_path)
 
+        self.pushButton.clicked.connect(self.delete_path)
+        self.pushButton_2.clicked.connect(self.delete_path)
+        self.pushButton_3.clicked.connect(self.delete_path)
+
+    def delete_path(self):
+        button = self.sender().objectName()
+
+        if button[-1] == "2":
+            PATH_THEME["яйцо"] = ""
+        elif button[-1] == "3":
+            PATH_THEME["заяц"] = ""
+        elif button[-1] == "n":
+            PATH_THEME["фон"] = ""
+
+        self.view_info()
+
+
     def view_info(self):
         qs = [("фон", self.label_bg), ("яйцо", self.label_egg), ("заяц", self.label_rabbit)]
 
@@ -300,8 +317,17 @@ def except_hook(cls, exception, traceback):
     sys.__excepthook__(cls, exception, traceback)
 
 
+def set_default_custom():
+    qs = ["фон", "яйцо", "заяц"]
+
+    for q in qs:
+        if PATH_THEME[q] == f"skins/0/{REFACTOR[q]}":
+            PATH_THEME[q] = ""
+
+
 def customize_game_theme():
     '''кастомизация игры'''
+    set_default_custom()
     get_path_to_file()
     print(PATH_THEME)
     return PATH_THEME
