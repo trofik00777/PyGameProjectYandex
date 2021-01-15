@@ -379,11 +379,11 @@ class Back_Btn(pygame.sprite.Sprite):  # кнопки меню
     image = load_image("btn_back.png")
 
     def __init__(self):
-        global game_sprites, settings_sprites, pause_sprites, rating_sprites
+        global game_sprites, settings_sprites, back_btn_sprites, rating_sprites
         super().__init__(info_sprites)
         super().__init__(settings_sprites)
         super().__init__(game_sprites)
-        super().__init__(pause_sprites)
+        super().__init__(back_btn_sprites)
         super().__init__(rating_sprites)
         self.image = Back_Btn.image
         self.rect = self.image.get_rect()
@@ -449,6 +449,46 @@ class Btn_Choose(pygame.sprite.Sprite):
                 self.rect.collidepoint((args[0].pos[0], args[0].pos[1])):
             CONST_SKIN_ID = theme.temp_const
             CUSTOM_THEME = {}
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+
+
+class Btn_Choose_Level_1(pygame.sprite.Sprite):
+    image = load_image("button_1.png")
+
+    def __init__(self):
+        super().__init__(settings_sprites)
+        self.image = Btn_Choose_Level_1.image
+        self.rect = self.image.get_rect()
+        self.rect.x = int(width * 0.25)
+        self.rect.y = int(height * 0.15)
+
+    def update(self, *args):
+        global theme, CONST_SKIN_ID, CUSTOM_THEME, level_game
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0], args[0].pos[1])):
+            level_game = 0
+            print(f"-------------------level = {level_game}")
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
+
+
+class Btn_Choose_Level_2(pygame.sprite.Sprite):
+    image = load_image("button_2.png")
+
+    def __init__(self):
+        super().__init__(settings_sprites)
+        self.image = Btn_Choose_Level_2.image
+        self.rect = self.image.get_rect()
+        self.rect.x = int(width * 0.67)
+        self.rect.y = int(height * 0.15)
+
+    def update(self, *args):
+        global theme, CONST_SKIN_ID, CUSTOM_THEME, level_game
+        if args and args[0].type == pygame.MOUSEBUTTONDOWN and \
+                self.rect.collidepoint((args[0].pos[0], args[0].pos[1])):
+            level_game = 1
+            print(f"-------------------level = {level_game}")
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             pygame.mouse.set_system_cursor(pygame.SYSTEM_CURSOR_HAND)
 
@@ -815,8 +855,10 @@ class Ball(pygame.sprite.Sprite):
             live_count -= 1
         else:
             live_count -= 2
-        if live_count == 0:
-            pass
+        if live_count <= 0:
+            print(PLAYER_LOGIN, point_count)
+            update_rating(PLAYER_LOGIN, level=level_game, score=point_count)
+            pause(False)
 
 
     def main_opt(self):
@@ -834,13 +876,15 @@ class Ball(pygame.sprite.Sprite):
             self.long += FPS + randrange(FPS * -0.3, FPS * 0.3)
 
 
-def pause():
+def pause(dr=True):
     global btn_back, info, settings, game, menu
     f = True
     while f:
-        pause_sprites.draw(screen)
+        if dr:
+            pause_sprites.draw(screen)
+        back_btn_sprites.draw(screen)
         for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN and dr:
                 if event.key == pygame.K_ESCAPE:
                     f = False
             if event.type == pygame.MOUSEBUTTONDOWN and \
@@ -852,6 +896,7 @@ def pause():
                 f = False
                 break
             pause_sprites.update(event)
+            back_btn_sprites.update(event)
         pause_sprites.update()
         pygame.display.flip()
 
@@ -973,8 +1018,8 @@ if __name__ == '__main__':
     running = True
 
     # Флаги, отвечающие за вызов функций и отрисовку окна
-    log_in = False
-    menu = True
+    log_in = True
+    menu = False
     info = False
     settings = False
     game = False
@@ -996,6 +1041,7 @@ if __name__ == '__main__':
     info_sprites = pygame.sprite.Group()
     pause_sprites = pygame.sprite.Group()
     rating_sprites = pygame.sprite.Group()
+    back_btn_sprites = pygame.sprite.Group()
     # Группы спрайтов
 
     # Логин -------------------------------------------------------------------------------------------------------
@@ -1044,6 +1090,8 @@ if __name__ == '__main__':
     btn_left = Btn_Left()
     btn_right = Btn_Right()
     btn_choose = Btn_Choose()
+    btn_choose_level_1 = Btn_Choose_Level_1()
+    btn_choose_level_2 = Btn_Choose_Level_2()
     btn_my_theme = Btn_My_Theme()
     theme = Theme()
     # Настройки -----------------------------------------------------------------------------------------------------
