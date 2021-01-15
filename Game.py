@@ -571,10 +571,11 @@ GAMEBACK_0 = load_image('skins/{}/bgf.jpg'.format(CONST_SKIN_ID))
 
 class GameBackgroundField(pygame.sprite.Sprite):  # фон меню
     def __init__(self):
-        global game_sprites, GAMEBACK_0, CONST_SKIN_ID, CUSTOM_THEME
+        global game_sprites, GAMEBACK_0, CONST_SKIN_ID, CUSTOM_THEME, point_count, live_count
         super().__init__(game_sprites)
         self.i = 0
-
+        point_count = 0
+        live_count = 6
         if CUSTOM_THEME:
             GAMEBACK_0 = load_image(CUSTOM_THEME['фон'])
         else:
@@ -706,9 +707,9 @@ class BrokenEgg(pygame.sprite.Sprite):
             self.rect.y = - 1000
 
 
-def draw_text(surf, text, size, x, y):
+def draw_text(surf, text, size, x, y, color):
     font = pygame.font.SysFont('Arial', size)
-    text_surface = font.render(text, True, 'BLACK')
+    text_surface = font.render(text, True, color)
     text_rect = text_surface.get_rect()
     text_rect.midtop = (x, y)
     surf.blit(text_surface, text_rect)
@@ -805,10 +806,18 @@ class Ball(pygame.sprite.Sprite):
             self.give_point()
 
     def fail(self):
+        global live_count
         if self.n in {0, 1}:
             broken.move()
         else:
             broken_2.move()
+        if rabbit.isShow:
+            live_count -= 1
+        else:
+            live_count -= 2
+        if live_count == 0:
+            pass
+
 
     def main_opt(self):
         self.k = 0
@@ -848,7 +857,7 @@ def pause():
 
 
 def game_call():
-    global running, wolfs, wolf, point_count
+    global running, wolfs, wolf, point_count, live_count
     if wolfs[0]:
         wolf.change_position()
     elif wolfs[1]:
@@ -890,7 +899,8 @@ def game_call():
         fourth_ball.start(set_game_background_field.i)
 
     game_sprites.draw(screen)
-    draw_text(screen, str(point_count), 40, width // 2, height // 4 * 1 + height // 14)
+    draw_text(screen, str(point_count), 40, width // 2, height // 4 * 1 + height // 14, 'BLACK')
+    draw_text(screen, ('lives - ' + str(live_count)), 40, width // 4 * 3 - width // 10, height // 4 * 1 + height // 14, 'RED')
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -920,6 +930,7 @@ def game_call():
 
 # Рейтинг
 IN_TOP_10 = False
+
 
 def rating_call(font):
     global running, PLAYER_LOGIN, IN_TOP_10
@@ -1022,7 +1033,7 @@ if __name__ == '__main__':
     SEC_START = 5
     SEC_LONG = 5
     level_game = 1
-    point_count = 0
+
     # Игра -----------------------------------------------------------------------------------------------------
 
     # Общие переменные
