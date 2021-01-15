@@ -18,6 +18,7 @@ error_wrong_data = False
 error_sign = False
 error_reg = False
 
+upload_all_images()
 
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
@@ -857,7 +858,7 @@ class Ball(pygame.sprite.Sprite):
             live_count -= 2
         if live_count <= 0:
             print(PLAYER_LOGIN, point_count)
-            update_rating(PLAYER_LOGIN, level=level_game, score=point_count)
+            update_rating(PLAYER_LOGIN, level=level_game + 1, score=point_count)
             pause(False)
 
 
@@ -945,7 +946,7 @@ def game_call():
 
     game_sprites.draw(screen)
     draw_text(screen, str(point_count), 40, width // 2, height // 4 * 1 + height // 14, 'BLACK')
-    draw_text(screen, ('lives - ' + str(live_count)), 40, width // 4 * 3 - width // 10, height // 4 * 1 + height // 14, 'RED')
+    draw_text(screen, ('Lives: ' + str(live_count)), 40, width // 4 * 3 - width // 10, height // 4 * 1 + height // 14, 'RED')
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -985,7 +986,7 @@ def rating_call(font):
                                      int(height / 2) * 0.7))
     rating_sprites.draw(screen)
     screen.blit(text, txt_rect)
-    for n, i in enumerate(get_top10(1)):
+    for n, i in enumerate(get_top10(level=level_game + 1)):
         if PLAYER_LOGIN in i:
             IN_TOP_10 = True
         text = font.render(' '.join(map(str, list(i))), True, (0, 0, 0))
@@ -993,7 +994,9 @@ def rating_call(font):
                                          int(height / 2) * 0.8 + n * int(height / 2) * 0.08))
         screen.blit(text, txt_rect)
     if not IN_TOP_10:
-        text = font.render(get_rank_player(PLAYER_LOGIN, 1), True, (0, 0, 0))
+        print(get_rank_player(PLAYER_LOGIN, level=level_game + 1))
+        text = font.render("You - " + ' '.join(map(str, list(get_rank_player(PLAYER_LOGIN, level=level_game + 1)))), True, (0, 0, 0))
+        print(text)
         txt_rect = text.get_rect(center=(int(width / 2),
                                          int(height / 2) * 1.6))
         screen.blit(text, txt_rect)
@@ -1078,7 +1081,7 @@ if __name__ == '__main__':
     pause_img = Pause()
     SEC_START = 5
     SEC_LONG = 5
-    level_game = 1
+    level_game = 0
 
     # Игра -----------------------------------------------------------------------------------------------------
 
