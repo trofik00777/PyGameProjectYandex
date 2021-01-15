@@ -10,6 +10,7 @@ root = tk.Tk()
 CONST_SKIN_ID = 0
 CONST_COUNT_OF_SKINS = 2
 CUSTOM_THEME = {}
+PLAYER_LOGIN = ''
 
 #  Переменные - ошибочные действия пользователей
 error_menu_limit = False
@@ -139,7 +140,8 @@ class Sign_in(pygame.sprite.Sprite):
         self.rect.y = int(height / 2 - self.rect[3] / 2) * 1.34
 
     def update(self, *args):
-        global menu, log_in, input_pass, input_login, error_wrong_data, error_sign, error_reg, error_menu_limit
+        global menu, log_in, input_pass, input_login, error_wrong_data, error_sign, error_reg, error_menu_limit, \
+            PLAYER_LOGIN
         if error_sign:
             font = pygame.font.Font(None, 60)
             text = font.render(check_login_password(input_login.string, input_pass.string), True,
@@ -160,6 +162,7 @@ class Sign_in(pygame.sprite.Sprite):
                     log_in = False
                     error_wrong_data = False
                     error_sign = False
+                    PLAYER_LOGIN = check_login_password(input_login.string, input_pass.string)[1]
                 else:
                     error_sign = True
                     error_wrong_data = False
@@ -179,7 +182,8 @@ class Register(pygame.sprite.Sprite):
         self.rect.y = int(height / 2 - self.rect[3] / 2) * 1.34
 
     def update(self, *args):
-        global menu, log_in, error_wrong_data, input_pass, input_login, error_reg, error_sign, error_menu_limit
+        global menu, log_in, error_wrong_data, input_pass, input_login, error_reg, error_sign, error_menu_limit, \
+            PLAYER_LOGIN
         if error_wrong_data:
             font = pygame.font.Font(None, 60)
             text = font.render('Неверные данные', True, (100, 0, 0))
@@ -205,6 +209,7 @@ class Register(pygame.sprite.Sprite):
                     error_sign = False
                     menu = True  # Переключение на окно Меню ----------------------------------------------------------
                     log_in = False
+                    PLAYER_LOGIN = check_login_password(input_login.string, input_pass.string)[1]
                 else:
                     error_reg = True
                     error_wrong_data = False
@@ -408,13 +413,15 @@ def info_call(font):
     global running, text_about
     screen.fill((255, 255, 255))
     info_sprites.draw(screen)
-    text = font.render(text_about, True, (200, 0, 0))
-    txt_rect = text.get_rect(center=(int(width / 2) * 1.03, int(height / 2) * 1.5))
-    screen.blit(text, txt_rect)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         info_sprites.update(event)
+    sp = text_about.split('. ')
+    for n, i in enumerate(sp):
+        text = font.render(i, True, (0, 0, 0))
+        txt_rect = (int(width * 0.25), int(height * 0.3 + n * height * 0.03), 0, 0)
+        screen.blit(text, txt_rect)
     info_sprites.update()
     pygame.display.flip()
     if menu:
@@ -912,10 +919,10 @@ def game_call():
 # Игра
 
 # Рейтинг
-
+IN_TOP_10 = False
 
 def rating_call(font):
-    global running
+    global running, PLAYER_LOGIN, IN_TOP_10
     screen.fill((255, 255, 255))
     text = font.render('Топ 10 игроков( Позиция / Логин / Рекорд )', True, (0, 0, 0))
     txt_rect = text.get_rect(center=(int(width / 2),
@@ -923,9 +930,16 @@ def rating_call(font):
     rating_sprites.draw(screen)
     screen.blit(text, txt_rect)
     for n, i in enumerate(get_top10(1)):
+        if PLAYER_LOGIN in i:
+            IN_TOP_10 = True
         text = font.render(' '.join(map(str, list(i))), True, (0, 0, 0))
         txt_rect = text.get_rect(center=(int(width / 2),
                                          int(height / 2) * 0.8 + n * int(height / 2) * 0.08))
+        screen.blit(text, txt_rect)
+    if not IN_TOP_10:
+        text = font.render(get_rank_player(PLAYER_LOGIN, 1), True, (0, 0, 0))
+        txt_rect = text.get_rect(center=(int(width / 2),
+                                         int(height / 2) * 1.6))
         screen.blit(text, txt_rect)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -1033,7 +1047,7 @@ if __name__ == '__main__':
         if menu:
             menu_call(pygame.font.Font(None, 50))
         if info:
-            info_call(pygame.font.Font(None, 40))
+            info_call(pygame.font.Font(None, 35))
         if settings:
             settings_call()
         if game:
