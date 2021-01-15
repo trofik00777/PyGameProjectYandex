@@ -769,7 +769,7 @@ class Ball(pygame.sprite.Sprite):
                                    fourth_ball.isRun].count(True) < 3 + (2 * level_game):
             self.rect.x = int(width * self.x)
             self.rect.y = int(height * self.y)
-            self.long = 5 * FPS - tick // 600
+            self.long = 3 * FPS - tick // 300
             if self.long < FPS // 2:
                 self.long = FPS // 2
             self.image = self.sImage
@@ -852,7 +852,10 @@ def game_call():
         wolf.change_position(3, 0.47, 0.5)
     set_game_background_field.i += 1
     screen.fill((255, 255, 255))
-
+    print([first_ball.isRun,
+           second_ball.isRun,
+           third_ball.isRun,
+           fourth_ball.isRun])
     if rabbit.isShow:
         rabbit.long += 1
     if rabbit.long > SEC_LONG * FPS + randrange(SEC_LONG * FPS // -2, SEC_LONG * FPS // 2):
@@ -1004,7 +1007,7 @@ if __name__ == '__main__':
     pause_img = Pause()
     SEC_START = 5
     SEC_LONG = 5
-    level_game = 0
+    level_game = 1
     point_count = 0
     # Игра -----------------------------------------------------------------------------------------------------
 
